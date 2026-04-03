@@ -8,7 +8,7 @@ import './App.css'
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/museum-project-manager">
       <div className="app">
         <Routes>
           <Route path="/" element={<Dashboard />} />
