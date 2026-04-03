@@ -130,7 +130,7 @@ function InventoryItemModal({ item, onSave, onClose }) {
                   onChange={e => handleChange('category', e.target.value)}
                 >
                   {INVENTORY_CATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
                   ))}
                 </select>
               </div>

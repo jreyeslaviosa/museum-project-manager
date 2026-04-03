@@ -148,58 +148,62 @@ function Inventory() {
         </div>
       </header>
 
-      <div className="container">
-        {/* Category Tabs */}
-        <div className="inventory-tabs">
-          <button
-            className={`inventory-tab ${activeCategory === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveCategory('all')}
-          >
-            All Items
-            <span className="tab-count">{inventory.length}</span>
-          </button>
-          {INVENTORY_CATEGORIES.map(cat => {
-            const count = getCategoryCount(cat.id);
-            return (
-              <button
-                key={cat.id}
-                className={`inventory-tab ${activeCategory === cat.id ? 'active' : ''}`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                {cat.icon} {cat.label}
-                {count > 0 && <span className="tab-count">{count}</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Stats */}
-        <InventoryStats inventory={inventory} />
+      <div className="inventory-layout">
+        {/* Category Sidebar */}
+        <aside className="inventory-sidebar">
+          <div className="sidebar-header">Categories</div>
+          <nav className="sidebar-nav">
+            <button
+              className={`sidebar-item ${activeCategory === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveCategory('all')}
+            >
+              <span>All Items</span>
+              <span className="sidebar-count">{inventory.length}</span>
+            </button>
+            {INVENTORY_CATEGORIES.map(cat => {
+              const count = getCategoryCount(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  className={`sidebar-item ${activeCategory === cat.id ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(cat.id)}
+                >
+                  <span>{cat.label}</span>
+                  <span className="sidebar-count">{count}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
 
         {/* Main Content */}
-        <div className="card">
-          <div className="card-header">
-            <h2>
-              {activeCategory === 'all' ? 'All Items' :
-                INVENTORY_CATEGORIES.find(c => c.id === activeCategory)?.label || activeCategory}
-            </h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                className="btn btn-outline btn-small"
-                onClick={() => setShowImportModal(true)}
-              >
-                Import CSV
-              </button>
-            </div>
-          </div>
+        <main className="inventory-main">
+          <InventoryStats inventory={inventory} />
 
-          <InventoryList
-            inventory={filteredInventory}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            onCheckout={setCheckoutItem}
-          />
-        </div>
+          <div className="card">
+            <div className="card-header">
+              <h2>
+                {activeCategory === 'all' ? 'All Items' :
+                  INVENTORY_CATEGORIES.find(c => c.id === activeCategory)?.label || activeCategory}
+              </h2>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="btn btn-outline btn-small"
+                  onClick={() => setShowImportModal(true)}
+                >
+                  Import CSV
+                </button>
+              </div>
+            </div>
+
+            <InventoryList
+              inventory={filteredInventory}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              onCheckout={setCheckoutItem}
+            />
+          </div>
+        </main>
       </div>
 
       {/* Modals */}

@@ -119,12 +119,12 @@ function MaintenanceTab({ project, onUpdate }) {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'issue': return '⚠️';
-      case 'repair': return '🔧';
-      case 'inspection': return '🔍';
-      case 'cleaning': return '🧹';
-      case 'other': return '📝';
-      default: return '📋';
+      case 'issue': return 'Issue';
+      case 'repair': return 'Repair';
+      case 'inspection': return 'Inspection';
+      case 'cleaning': return 'Cleaning';
+      case 'other': return 'Other';
+      default: return 'Log';
     }
   };
 
@@ -236,7 +236,7 @@ function MaintenanceTab({ project, onUpdate }) {
     <div>
       <div className="card">
         <div className="card-header">
-          <h2>🔧 Maintenance Log</h2>
+          <h2>Maintenance Log</h2>
           <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>
             + Log Issue
           </button>
@@ -332,7 +332,7 @@ function MaintenanceTab({ project, onUpdate }) {
                         alignItems: 'center',
                         gap: '0.5rem'
                       }}>
-                        {getTypeIcon(item.type)} {item.title}
+                        {item.title}
                       </h4>
                       {item.description && (
                         <p style={{ fontSize: '0.9rem', color: 'var(--gray)', marginTop: '0.5rem' }}>
@@ -345,7 +345,7 @@ function MaintenanceTab({ project, onUpdate }) {
                         </span>
                         {item.assignee && (
                           <span style={{ color: 'var(--gray)' }}>
-                            👤 {item.assignee}
+                            {item.assignee}
                           </span>
                         )}
                         <span style={{ color: 'var(--gray)' }}>
@@ -361,10 +361,10 @@ function MaintenanceTab({ project, onUpdate }) {
                   </div>
                   <div style={{ display: 'flex', gap: '0.25rem' }}>
                     <button className="icon-btn" onClick={() => startEdit(item)} title="Edit">
-                      ✏️
+                      Edit
                     </button>
                     <button className="icon-btn" onClick={() => handleDelete(item.id)} title="Delete">
-                      🗑️
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -378,7 +378,7 @@ function MaintenanceTab({ project, onUpdate }) {
       {resolvedCount > 0 && (
         <div className="card">
           <div className="card-header">
-            <h3>📜 Resolution History</h3>
+            <h3>Resolution History</h3>
           </div>
           <div style={{ display: 'grid', gap: '0.5rem' }}>
             {maintenanceLog
@@ -398,7 +398,6 @@ function MaintenanceTab({ project, onUpdate }) {
                   }}
                 >
                   <div>
-                    <span style={{ marginRight: '0.5rem' }}>{getTypeIcon(item.type)}</span>
                     <span style={{ fontWeight: 500 }}>{item.title}</span>
                     {item.assignee && (
                       <span style={{ color: 'var(--gray)', marginLeft: '0.5rem', fontSize: '0.85rem' }}>

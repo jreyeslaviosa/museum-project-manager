@@ -114,7 +114,7 @@ function EquipmentTab({ project, onUpdate }) {
 
   const getCategoryLabel = (categoryId) => {
     const cat = INVENTORY_CATEGORIES.find(c => c.id === categoryId);
-    return cat ? `${cat.icon} ${cat.label}` : categoryId;
+    return cat ? cat.label : categoryId;
   };
 
   const formatDate = (dateString) => {
@@ -247,14 +247,14 @@ function EquipmentTab({ project, onUpdate }) {
                 onClick={() => startEditing(item.id, item.name)}
                 title="Edit"
               >
-                ✏️
+                Edit
               </button>
               <button
                 className="icon-btn"
                 onClick={() => moveItem(item.id, type, type === 'artist' ? 'museum' : 'artist')}
                 title={`Move to ${type === 'artist' ? 'Museum' : 'Artist'}`}
               >
-                ↔️
+                Move
               </button>
               <button
                 className="icon-btn"

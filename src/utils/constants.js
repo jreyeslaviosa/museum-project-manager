@@ -3,7 +3,6 @@ export const TEAM_MEMBERS = [
   'Tiger',
   'Rommel',
   'Rodrigo',
-  'Zach',
   'Daniel',
   'Tiffani',
   'Sofia',
@@ -12,16 +11,16 @@ export const TEAM_MEMBERS = [
 ];
 
 export const INVENTORY_CATEGORIES = [
-  { id: 'projectors', label: 'Projectors', icon: '📽️' },
-  { id: 'lenses', label: 'Lenses', icon: '🔍' },
-  { id: 'audio', label: 'Audio', icon: '🔊' },
-  { id: 'led', label: 'LED', icon: '💡' },
-  { id: 'computers', label: 'Computers', icon: '💻' },
-  { id: 'cables', label: 'Cables', icon: '🔌' },
-  { id: 'rigging', label: 'Rigging', icon: '🔧' },
-  { id: 'lighting', label: 'Lighting', icon: '🎨' },
-  { id: 'media-players', label: 'Media Players', icon: '▶️' },
-  { id: 'other', label: 'Other', icon: '📦' }
+  { id: 'projectors', label: 'Projectors' },
+  { id: 'lenses', label: 'Lenses' },
+  { id: 'audio', label: 'Audio' },
+  { id: 'led', label: 'LED' },
+  { id: 'computers', label: 'Computers' },
+  { id: 'cables', label: 'Cables' },
+  { id: 'rigging', label: 'Rigging' },
+  { id: 'lighting', label: 'Lighting' },
+  { id: 'media-players', label: 'Media Players' },
+  { id: 'other', label: 'Other' }
 ];
 
 export const CONDITION_OPTIONS = [

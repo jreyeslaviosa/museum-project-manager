@@ -357,10 +357,10 @@ function BOMTab({ project, onUpdate }) {
                     <td>
                       <div style={{ display: 'flex', gap: '0.25rem' }}>
                         <button className="icon-btn" onClick={() => startEdit(item)} title="Edit">
-                          ✏️
+                          Edit
                         </button>
                         <button className="icon-btn" onClick={() => handleDelete(item.id)} title="Delete">
-                          🗑️
+                          Delete
                         </button>
                       </div>
                     </td>

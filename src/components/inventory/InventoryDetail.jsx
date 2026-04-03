@@ -103,7 +103,7 @@ function InventoryDetail() {
 
   const getCategoryInfo = () => {
     const cat = INVENTORY_CATEGORIES.find(c => c.id === item.category);
-    return cat || { icon: '📦', label: item.category };
+    return cat || { label: item.category };
   };
 
   const getConditionInfo = () => {
@@ -156,7 +156,7 @@ function InventoryDetail() {
           <div>
             <h1>{item.name}</h1>
             <div className="item-meta">
-              <span className="category-badge">{category.icon} {category.label}</span>
+              <span className="category-badge">{category.label}</span>
               <span className="status-badge" style={{ background: `${status.color}20`, color: status.color }}>
                 {status.label}
               </span>

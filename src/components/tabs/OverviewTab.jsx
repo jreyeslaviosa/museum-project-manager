@@ -391,7 +391,7 @@ function OverviewTab({ project, onUpdate }) {
                 return (
                   <div key={assignee} style={{ marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                      <span style={{ fontSize: '0.9rem' }}>👤 {assignee}</span>
+                      <span style={{ fontSize: '0.9rem' }}>{assignee}</span>
                       <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
                         {stats.completed}/{stats.total} ({percentage}%)
                       </span>

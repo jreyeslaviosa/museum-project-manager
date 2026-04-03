@@ -138,7 +138,7 @@ function InstallationTab({ project, onUpdate }) {
             accept="image/*"
             multiple
           />
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🖼️</div>
+          <div style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--gray)' }}>Images</div>
           <p><strong>Click to upload</strong> or drag and drop</p>
           <p>PNG, JPG, GIF, SVG</p>
         </div>

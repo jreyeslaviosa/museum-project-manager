@@ -70,7 +70,7 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
 
   const getCategoryLabel = (categoryId) => {
     const category = INVENTORY_CATEGORIES.find(c => c.id === categoryId);
-    return category ? `${category.icon} ${category.label}` : categoryId;
+    return category ? category.label : categoryId;
   };
 
   const getConditionBadge = (condition) => {

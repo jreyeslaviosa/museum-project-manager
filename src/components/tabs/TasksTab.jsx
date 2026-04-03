@@ -223,7 +223,7 @@ function TasksTab({ project, onUpdate }) {
               />
               <span>
                 <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  🚩 Mark as Milestone
+                  Mark as Milestone
                 </strong>
                 <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
                   Milestones are key project checkpoints visible to the whole team
@@ -350,7 +350,7 @@ function TasksTab({ project, onUpdate }) {
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            {task.isMilestone && <span title="Milestone">🚩</span>}
+            {task.isMilestone && <span title="Milestone" style={{ color: '#f59e0b', fontWeight: 600 }}>M</span>}
             {task.title}
           </h4>
           {task.description && (
@@ -374,7 +374,7 @@ function TasksTab({ project, onUpdate }) {
                       fontSize: '0.8rem'
                     }}
                   >
-                    👤 {person}
+                    {person}
                   </span>
                 ))}
               </div>
@@ -393,7 +393,7 @@ function TasksTab({ project, onUpdate }) {
                 fontSize: '0.8rem',
                 color: isOverdue(task.dueDate) && !task.completed ? 'var(--accent)' : 'var(--gray)'
               }}>
-                📅 {formatDate(task.dueDate)}
+                {formatDate(task.dueDate)}
                 {isOverdue(task.dueDate) && !task.completed && ' (overdue)'}
               </span>
             )}
@@ -406,10 +406,10 @@ function TasksTab({ project, onUpdate }) {
         </div>
         <div className="task-actions">
           <button className="icon-btn" onClick={() => startEdit(task)} title="Edit">
-            ✏️
+            Edit
           </button>
           <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete">
-            🗑️
+            Delete
           </button>
         </div>
       </div>
@@ -427,9 +427,9 @@ function TasksTab({ project, onUpdate }) {
         paddingBottom: '0.5rem'
       }}>
         {[
-          { id: 'tasks', label: 'All Tasks', icon: '📋' },
-          { id: 'milestones', label: 'Milestones', icon: '🚩', count: milestones.length },
-          { id: 'history', label: 'Activity History', icon: '📜', count: completedTasks.length }
+          { id: 'tasks', label: 'All Tasks' },
+          { id: 'milestones', label: 'Milestones', count: milestones.length },
+          { id: 'history', label: 'Activity History', count: completedTasks.length }
         ].map(view => (
           <button
             key={view.id}
@@ -447,7 +447,7 @@ function TasksTab({ project, onUpdate }) {
               gap: '0.5rem'
             }}
           >
-            {view.icon} {view.label}
+            {view.label}
             {view.count !== undefined && (
               <span style={{
                 background: activeView === view.id ? 'rgba(255,255,255,0.2)' : 'var(--light)',
@@ -502,7 +502,7 @@ function TasksTab({ project, onUpdate }) {
                     className={`btn btn-small ${filter === f ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setFilter(f)}
                   >
-                    {f === 'milestones' ? '🚩 ' : ''}{f.charAt(0).toUpperCase() + f.slice(1)}
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
                 ))}
               </div>
@@ -580,7 +580,7 @@ function TasksTab({ project, onUpdate }) {
                     <div key={assignee} style={{ marginBottom: '1.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                         <h4 style={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          👤 {assignee}
+                          {assignee}
                         </h4>
                         <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
                           {completed}/{total} done ({percentage}%)
@@ -605,7 +605,6 @@ function TasksTab({ project, onUpdate }) {
                             <span style={{ color: task.completed ? 'var(--success)' : 'var(--border)' }}>
                               {task.completed ? '✓' : '○'}
                             </span>
-                            {task.isMilestone && <span>🚩</span>}
                             <span style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
                               {task.title}
                             </span>
@@ -630,7 +629,7 @@ function TasksTab({ project, onUpdate }) {
       {activeView === 'milestones' && (
         <div className="card">
           <div className="card-header">
-            <h2>🚩 Project Milestones</h2>
+            <h2>Project Milestones</h2>
             <button className="btn btn-primary btn-small" onClick={() => {
               setFormData(prev => ({ ...prev, isMilestone: true }));
               setShowAddModal(true);
@@ -697,7 +696,7 @@ function TasksTab({ project, onUpdate }) {
                         color: 'white',
                         fontSize: '0.7rem'
                       }}>
-                        {milestone.completed ? '✓' : '🚩'}
+                        {milestone.completed ? '✓' : '●'}
                       </div>
 
                       <div style={{
@@ -716,13 +715,13 @@ function TasksTab({ project, onUpdate }) {
                           </h4>
                           <div style={{ display: 'flex', gap: '0.25rem' }}>
                             <button className="icon-btn" onClick={() => toggleComplete(milestone.id)}>
-                              {milestone.completed ? '↩️' : '✅'}
+                              {milestone.completed ? 'Undo' : 'Done'}
                             </button>
                             <button className="icon-btn" onClick={() => startEdit(milestone)}>
-                              ✏️
+                              Edit
                             </button>
                             <button className="icon-btn" onClick={() => handleDelete(milestone.id)}>
-                              🗑️
+                              Delete
                             </button>
                           </div>
                         </div>
@@ -741,13 +740,13 @@ function TasksTab({ project, onUpdate }) {
                           )}
                           {!milestone.completed && milestone.dueDate && (
                             <span style={{ color: isOverdue(milestone.dueDate) ? 'var(--accent)' : 'var(--gray)' }}>
-                              📅 Due {formatDate(milestone.dueDate)}
+                              Due {formatDate(milestone.dueDate)}
                               {isOverdue(milestone.dueDate) && ' (overdue)'}
                             </span>
                           )}
                           {assignees.length > 0 && (
                             <span style={{ color: 'var(--gray)' }}>
-                              👤 {assignees.join(', ')}
+                              {assignees.join(', ')}
                             </span>
                           )}
                         </div>
@@ -765,7 +764,7 @@ function TasksTab({ project, onUpdate }) {
       {activeView === 'history' && (
         <div className="card">
           <div className="card-header">
-            <h2>📜 Activity History</h2>
+            <h2>Activity History</h2>
           </div>
 
           <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
@@ -802,7 +801,7 @@ function TasksTab({ project, onUpdate }) {
                       color: 'white',
                       flexShrink: 0
                     }}>
-                      {task.isMilestone ? '🚩' : '✓'}
+                      {task.isMilestone ? 'M' : '✓'}
                     </div>
 
                     <div style={{ flex: 1 }}>

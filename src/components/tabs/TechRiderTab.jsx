@@ -82,7 +82,7 @@ function TechRiderTab({ project, onUpdate }) {
             onChange={handleFileSelect}
             accept=".pdf,.doc,.docx,.txt,.rtf"
           />
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
+          <div style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--gray)' }}>Document</div>
           <p><strong>Click to upload</strong> or drag and drop</p>
           <p>PDF, DOC, DOCX, TXT, RTF</p>
         </div>
@@ -90,7 +90,6 @@ function TechRiderTab({ project, onUpdate }) {
         <div>
           <div className="uploaded-file">
             <span>
-              <span style={{ fontSize: '1.5rem', marginRight: '0.5rem' }}>📄</span>
               <div>
                 <strong>{project.techRider.name}</strong>
                 <div style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>

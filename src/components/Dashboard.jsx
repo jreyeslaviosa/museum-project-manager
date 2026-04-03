@@ -167,11 +167,11 @@ function Dashboard() {
           overflowX: 'auto'
         }}>
           {[
-            { id: 'overview', label: 'Overview', icon: '📊' },
-            { id: 'active', label: 'Active Installations', icon: '🎭', count: activeInstallations.length },
-            { id: 'team', label: 'Team Workload', icon: '👥' },
-            { id: 'calendar', label: 'Upcoming', icon: '📅' },
-            { id: 'shopping', label: 'Shopping List', icon: '🛒', count: itemsToBuy.length }
+            { id: 'overview', label: 'Overview' },
+            { id: 'active', label: 'Active Installations', count: activeInstallations.length },
+            { id: 'team', label: 'Team Workload' },
+            { id: 'calendar', label: 'Upcoming' },
+            { id: 'shopping', label: 'Shopping List', count: itemsToBuy.length }
           ].map(view => (
             <button
               key={view.id}
@@ -191,7 +191,7 @@ function Dashboard() {
                 whiteSpace: 'nowrap'
               }}
             >
-              {view.icon} {view.label}
+              {view.label}
               {view.count > 0 && (
                 <span style={{
                   background: activeView === view.id ? 'rgba(255,255,255,0.2)' : 'var(--accent)',
@@ -245,7 +245,7 @@ function Dashboard() {
                 {overdueTasks.length > 0 && (
                   <div className="card" style={{ margin: 0, borderLeft: '4px solid var(--accent)' }}>
                     <h3 style={{ color: 'var(--accent)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      ⚠️ Overdue Tasks ({overdueTasks.length})
+                      Overdue Tasks ({overdueTasks.length})
                     </h3>
                     {overdueTasks.slice(0, 5).map(task => (
                       <Link
@@ -273,7 +273,7 @@ function Dashboard() {
                 {upcomingOpenings.length > 0 && (
                   <div className="card" style={{ margin: 0, borderLeft: '4px solid #8b5cf6' }}>
                     <h3 style={{ color: '#8b5cf6', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      🎭 Upcoming Openings
+                      Upcoming Openings
                     </h3>
                     {upcomingOpenings.map(project => {
                       const days = getDaysUntil(project.openingDate);
@@ -391,7 +391,7 @@ function Dashboard() {
 
                       {(project.tasks || []).filter(t => t.isMilestone && !t.completed).length > 0 && (
                         <div style={{ fontSize: '0.8rem', color: '#f59e0b', marginTop: '0.5rem' }}>
-                          🚩 {(project.tasks || []).filter(t => t.isMilestone && !t.completed).length} milestone(s) pending
+                          {(project.tasks || []).filter(t => t.isMilestone && !t.completed).length} milestone(s) pending
                         </div>
                       )}
                     </Link>
@@ -404,7 +404,7 @@ function Dashboard() {
             {upcomingMilestones.length > 0 && (
               <div className="card" style={{ marginTop: '2rem' }}>
                 <div className="card-header">
-                  <h3>🚩 Upcoming Milestones</h3>
+                  <h3>Upcoming Milestones</h3>
                 </div>
                 <div style={{ display: 'grid', gap: '0.5rem' }}>
                   {upcomingMilestones.map(milestone => (
@@ -431,7 +431,7 @@ function Dashboard() {
                       </div>
                       {milestone.dueDate && (
                         <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
-                          📅 {formatDate(milestone.dueDate)}
+                          {formatDate(milestone.dueDate)}
                         </span>
                       )}
                     </Link>
@@ -446,7 +446,7 @@ function Dashboard() {
         {activeView === 'active' && (
           <div className="card">
             <div className="card-header">
-              <h2>🎭 Active Installations</h2>
+              <h2>Active Installations</h2>
             </div>
             <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
               Currently installed exhibitions that may need maintenance or monitoring
@@ -518,7 +518,7 @@ function Dashboard() {
         {activeView === 'team' && (
           <div className="card">
             <div className="card-header">
-              <h2>👥 Team Workload</h2>
+              <h2>Team Workload</h2>
             </div>
             <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
               Active tasks assigned to each team member across all projects
@@ -541,7 +541,7 @@ function Dashboard() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        👤 {member}
+                        {member}
                       </h4>
                       <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem' }}>
                         <span style={{ color: 'var(--secondary)', fontWeight: 500 }}>
@@ -566,7 +566,7 @@ function Dashboard() {
         {activeView === 'calendar' && (
           <div className="card">
             <div className="card-header">
-              <h2>📅 Upcoming Deadlines</h2>
+              <h2>Upcoming Deadlines</h2>
             </div>
             <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
               Tasks and milestones due in the next 14 days
@@ -598,7 +598,7 @@ function Dashboard() {
                     >
                       <div>
                         <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {task.isMilestone && '🚩'} {task.title}
+                          {task.title}
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
                           {task.projectTitle}
@@ -627,7 +627,7 @@ function Dashboard() {
         {activeView === 'shopping' && (
           <div className="card">
             <div className="card-header">
-              <h2>🛒 Shopping List</h2>
+              <h2>Shopping List</h2>
             </div>
             <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
               All BOM items marked "To Buy" across all projects
