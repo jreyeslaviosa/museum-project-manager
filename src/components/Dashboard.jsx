@@ -147,7 +147,7 @@ function Dashboard() {
       <header className="header">
         <Link to="/"><h1>Museum Project Manager</h1></Link>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'white' }}>
+          <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
             Inventory
           </Link>
           <Link to="/project/new" className="btn btn-primary btn-small">

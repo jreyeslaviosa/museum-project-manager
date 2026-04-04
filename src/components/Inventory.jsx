@@ -139,7 +139,7 @@ function Inventory() {
       <header className="header">
         <Link to="/"><h1>Museum Project Manager</h1></Link>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'white' }}>
+          <Link to="/dashboard" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
             Dashboard
           </Link>
           <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>

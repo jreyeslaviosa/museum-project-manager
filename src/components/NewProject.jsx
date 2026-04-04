@@ -39,7 +39,7 @@ function NewProject() {
       </header>
 
       <div className="container">
-        <Link to="/" className="back-link">← Back to Projects</Link>
+        <Link to="/dashboard" className="back-link">← Back to Projects</Link>
 
         <div className="card" style={{ maxWidth: '600px' }}>
           <div className="card-header">
@@ -122,7 +122,7 @@ function NewProject() {
               <button type="submit" className="btn btn-primary">
                 Create Project
               </button>
-              <Link to="/" className="btn btn-outline">
+              <Link to="/dashboard" className="btn btn-outline">
                 Cancel
               </Link>
             </div>

@@ -655,6 +655,86 @@ tr:hover {
   justify-content: flex-end;
 }
 
+/* Login Page */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+.login-form {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-form h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.login-error {
+  color: var(--accent);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+/* Home Page */
+.home-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 50px);
+}
+
+.home-options {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.home-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2.5rem 3rem;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  transition: border-color 0.15s;
+  width: 260px;
+}
+
+.home-card:hover {
+  border-color: var(--dark);
+}
+
+.home-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.home-card p {
+  font-size: 0.8rem;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -669,6 +749,14 @@ tr:hover {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+  }
+
+  .home-options {
+    flex-direction: column;
+  }
+
+  .home-card {
+    width: 100%;
   }
 
   .equipment-section {

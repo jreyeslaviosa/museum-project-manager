@@ -93,7 +93,7 @@ function ProjectDetail() {
       </header>
 
       <div className="container">
-        <Link to="/" className="back-link">← Back to Projects</Link>
+        <Link to="/dashboard" className="back-link">← Back to Projects</Link>
 
         <div className="project-header">
           <div>
