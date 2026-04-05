@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { TEAM_MEMBERS, INVENTORY_CATEGORIES } from '../../utils/constants';
+import ImageLightbox from '../ImageLightbox';
 
 const formatDate = (dateString) => {
   if (!dateString) return '-';
@@ -22,6 +24,7 @@ const getCategoryLabel = (categoryId) => {
 };
 
 function FullViewTab({ project }) {
+  const [lightbox, setLightbox] = useState(null);
   const artistItems = project.artistProviding || [];
   const museumItems = project.museumProviding || [];
   const bomList = project.bomList || [];
@@ -141,8 +144,8 @@ function FullViewTab({ project }) {
             ))}
             {imageFiles.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {imageFiles.map(img => (
-                  <div key={img.id || img.name} style={{ borderRadius: '4px', overflow: 'hidden', aspectRatio: '4/3' }}>
+                {imageFiles.map((img, idx) => (
+                  <div key={img.id || img.name} style={{ borderRadius: '4px', overflow: 'hidden', aspectRatio: '4/3', cursor: 'pointer' }} onClick={() => setLightbox({ images: imageFiles, index: idx })}>
                     <img src={img.data} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                 ))}
@@ -212,8 +215,8 @@ function FullViewTab({ project }) {
             Installation Images ({project.installationImages.length})
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.5rem' }}>
-            {project.installationImages.map(img => (
-              <div key={img.id} style={{ borderRadius: '4px', overflow: 'hidden', aspectRatio: '4/3' }}>
+            {project.installationImages.map((img, idx) => (
+              <div key={img.id} style={{ borderRadius: '4px', overflow: 'hidden', aspectRatio: '4/3', cursor: 'pointer' }} onClick={() => setLightbox({ images: project.installationImages, index: idx })}>
                 <img src={img.data} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             ))}
@@ -358,6 +361,10 @@ function FullViewTab({ project }) {
           <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Notes</div>
           <p style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem', lineHeight: 1.6 }}>{project.notes}</p>
         </div>
+      )}
+
+      {lightbox && (
+        <ImageLightbox images={lightbox.images} initialIndex={lightbox.index} onClose={() => setLightbox(null)} />
       )}
     </div>
   );

@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import ImageLightbox from '../ImageLightbox';
 
 function InstallationTab({ project, onUpdate }) {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [editingPlan, setEditingPlan] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [planText, setPlanText] = useState(project.installationPlan || '');
 
   const images = project.installationImages || [];
@@ -145,12 +147,12 @@ function InstallationTab({ project, onUpdate }) {
 
         {images.length > 0 && (
           <div className="image-gallery">
-            {images.map(img => (
-              <div key={img.id} className="image-item">
+            {images.map((img, idx) => (
+              <div key={img.id} className="image-item" style={{ cursor: 'pointer' }} onClick={() => setLightboxIndex(idx)}>
                 <img src={img.data} alt={img.name} />
                 <button
                   className="delete-btn"
-                  onClick={() => removeImage(img.id)}
+                  onClick={(e) => { e.stopPropagation(); removeImage(img.id); }}
                   title="Remove image"
                 >
                   ✕
@@ -158,6 +160,10 @@ function InstallationTab({ project, onUpdate }) {
               </div>
             ))}
           </div>
+        )}
+
+        {lightboxIndex !== null && (
+          <ImageLightbox images={images} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
         )}
 
         {images.length === 0 && (

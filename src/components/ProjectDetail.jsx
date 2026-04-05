@@ -25,7 +25,8 @@ const ADMIN_TABS = [
 ];
 
 const BUILDER_TABS = [
-  { id: 'overview', label: 'Overview' }
+  { id: 'overview', label: 'Overview' },
+  { id: 'full-view', label: 'Full View' }
 ];
 
 function ProjectDetail() {

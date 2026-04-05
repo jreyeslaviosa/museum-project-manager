@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import ImageLightbox from '../ImageLightbox';
 
 function TechRiderTab({ project, onUpdate }) {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // Support both old single-file format and new multi-file format
   const files = project.techRiderFiles || (project.techRider ? [project.techRider] : []);
@@ -153,12 +155,12 @@ function TechRiderTab({ project, onUpdate }) {
               Images ({imageFiles.length})
             </div>
             <div className="image-gallery">
-              {imageFiles.map(file => (
-                <div key={file.id || file.name} className="image-item">
+              {imageFiles.map((file, idx) => (
+                <div key={file.id || file.name} className="image-item" style={{ cursor: 'pointer' }} onClick={() => setLightboxIndex(idx)}>
                   <img src={file.data} alt={file.name} />
                   <button
                     className="delete-btn"
-                    onClick={() => removeFile(file.id)}
+                    onClick={(e) => { e.stopPropagation(); removeFile(file.id); }}
                     title="Remove image"
                   >
                     ✕
@@ -166,6 +168,10 @@ function TechRiderTab({ project, onUpdate }) {
                 </div>
               ))}
             </div>
+
+            {lightboxIndex !== null && (
+              <ImageLightbox images={imageFiles} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+            )}
           </div>
         )}
 
