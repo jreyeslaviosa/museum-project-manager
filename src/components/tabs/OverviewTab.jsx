@@ -12,7 +12,7 @@ const getAssignees = (task) => {
   return [];
 };
 
-function OverviewTab({ project, onUpdate }) {
+function OverviewTab({ project, onUpdate, readOnly }) {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     title: project.title || '',
@@ -226,9 +226,11 @@ function OverviewTab({ project, onUpdate }) {
       <div className="card">
         <div className="card-header">
           <h2>Project Details</h2>
-          <button className="btn btn-outline btn-small" onClick={() => setEditing(true)}>
-            Edit
-          </button>
+          {!readOnly && (
+            <button className="btn btn-outline btn-small" onClick={() => setEditing(true)}>
+              Edit
+            </button>
+          )}
         </div>
 
         <div className="form-row" style={{ marginBottom: '1.5rem' }}>
@@ -326,7 +328,7 @@ function OverviewTab({ project, onUpdate }) {
           <p style={{ whiteSpace: 'pre-wrap' }}>{project.description}</p>
         ) : (
           <p style={{ color: 'var(--gray)', fontStyle: 'italic' }}>
-            No description added yet. Click "Edit" to add one.
+            {readOnly ? 'No description added yet.' : 'No description added yet. Click "Edit" to add one.'}
           </p>
         )}
       </div>

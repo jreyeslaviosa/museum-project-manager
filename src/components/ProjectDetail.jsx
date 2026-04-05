@@ -25,7 +25,7 @@ const ADMIN_TABS = [
 ];
 
 const BUILDER_TABS = [
-  { id: 'full-view', label: 'Full View' }
+  { id: 'overview', label: 'Overview' }
 ];
 
 function ProjectDetail() {
@@ -38,7 +38,7 @@ function ProjectDetail() {
   const tabs = isBuilder ? BUILDER_TABS : ADMIN_TABS;
 
   useEffect(() => {
-    setActiveTab(isBuilder ? 'full-view' : 'overview');
+    setActiveTab('overview');
   }, [isBuilder]);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ function ProjectDetail() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab project={project} onUpdate={handleUpdate} />;
+        return <OverviewTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} />;
       case 'tech-rider':
         return <TechRiderTab project={project} onUpdate={handleUpdate} />;
       case 'equipment':
