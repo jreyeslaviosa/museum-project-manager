@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { getConsumables, createConsumable, updateConsumable, deleteConsumable } from '../utils/storage';
@@ -6,81 +6,62 @@ import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS, TEAM_MEMBERS } 
 
 function Consumables() {
   const [items, setItems] = useState([]);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, pending, ordered, received
+  const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const [formData, setFormData] = useState({
-    name: '',
-    quantity: 1,
-    unit: 'pcs',
-    status: 'pending',
-    store: '',
-    cost: '',
-    notes: '',
-    requestedBy: '',
+  const nameInputRef = useRef(null);
+
+  // Quick-add state
+  const [quickName, setQuickName] = useState('');
+  const [quickQty, setQuickQty] = useState(1);
+  const [quickUnit, setQuickUnit] = useState('pcs');
+  const [quickPerson, setQuickPerson] = useState('');
+  const [quickNotes, setQuickNotes] = useState('');
+  const [showNotes, setShowNotes] = useState(false);
+
+  // Edit modal state
+  const [editForm, setEditForm] = useState({
+    name: '', quantity: 1, unit: 'pcs', status: 'pending',
+    store: '', customStore: '', cost: '', notes: '', requestedBy: '',
   });
 
   useEffect(() => {
     getConsumables().then(setItems);
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handlePresetSelect = (e) => {
-    const value = e.target.value;
-    if (value) {
-      setFormData(prev => ({ ...prev, name: value }));
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      quantity: 1,
-      unit: 'pcs',
-      status: 'pending',
-      store: '',
-      cost: '',
-      notes: '',
-      requestedBy: '',
-    });
-  };
-
-  const handleAdd = async (e) => {
+  const handleQuickAdd = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!quickName.trim()) return;
 
     const newItem = {
       id: uuidv4(),
-      ...formData,
-      quantity: parseInt(formData.quantity) || 1,
-      cost: formData.cost ? parseFloat(formData.cost) : null,
+      name: quickName.trim(),
+      quantity: parseInt(quickQty) || 1,
+      unit: quickUnit,
+      status: 'pending',
+      store: '',
+      cost: null,
+      notes: quickNotes.trim(),
+      requestedBy: quickPerson,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     await createConsumable(newItem);
     setItems(await getConsumables());
-    resetForm();
-    setShowAddModal(false);
+    setQuickName('');
+    setQuickQty(1);
+    setQuickUnit('pcs');
+    setQuickNotes('');
+    setShowNotes(false);
+    nameInputRef.current?.focus();
   };
 
-  const handleEdit = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-
-    await updateConsumable(editingItem.id, {
-      ...formData,
-      quantity: parseInt(formData.quantity) || 1,
-      cost: formData.cost ? parseFloat(formData.cost) : null,
-    });
-    setItems(await getConsumables());
-    resetForm();
-    setEditingItem(null);
+  const handlePresetSelect = (e) => {
+    if (e.target.value) {
+      setQuickName(e.target.value);
+      e.target.value = '';
+    }
   };
 
   const handleDelete = async (id) => {
@@ -96,17 +77,48 @@ function Consumables() {
   };
 
   const startEdit = (item) => {
-    setFormData({
+    const storeIsPreset = SUGGESTED_STORES.includes(item.store);
+    setEditForm({
       name: item.name,
       quantity: item.quantity,
       unit: item.unit || 'pcs',
       status: item.status,
-      store: item.store || '',
+      store: storeIsPreset ? item.store : '',
+      customStore: storeIsPreset ? '' : (item.store || ''),
       cost: item.cost || '',
       notes: item.notes || '',
       requestedBy: item.requestedBy || '',
     });
     setEditingItem(item);
+  };
+
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    if (!editForm.name.trim()) return;
+
+    const store = editForm.store || editForm.customStore;
+
+    await updateConsumable(editingItem.id, {
+      name: editForm.name.trim(),
+      quantity: parseInt(editForm.quantity) || 1,
+      unit: editForm.unit,
+      status: editForm.status,
+      store: store.trim(),
+      cost: editForm.cost ? parseFloat(editForm.cost) : null,
+      notes: editForm.notes.trim(),
+      requestedBy: editForm.requestedBy,
+    });
+    setItems(await getConsumables());
+    setEditingItem(null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'store' && value) updated.customStore = '';
+      return updated;
+    });
   };
 
   const filteredItems = items
@@ -136,140 +148,6 @@ function Consumables() {
     }
   };
 
-  const renderModal = (isEdit) => (
-    <div className="modal-overlay" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '550px' }}>
-        <div className="modal-header">
-          <h3>{isEdit ? 'Edit Item' : 'Request Consumable'}</h3>
-          <button className="icon-btn" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>x</button>
-        </div>
-
-        <form onSubmit={isEdit ? handleEdit : handleAdd}>
-          {!isEdit && (
-            <div className="form-group">
-              <label>Quick Select</label>
-              <select onChange={handlePresetSelect} value="">
-                <option value="">Choose a common item...</option>
-                {CONSUMABLE_PRESETS.map(p => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="form-group">
-            <label>Item Name *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="e.g., Plywood 4x8 sheets"
-              required
-              autoFocus={!!isEdit}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Quantity</label>
-              <input
-                type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                min="1"
-              />
-            </div>
-            <div className="form-group">
-              <label>Unit</label>
-              <select name="unit" value={formData.unit} onChange={handleChange}>
-                {CONSUMABLE_UNITS.map(u => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Est. Cost ($)</label>
-              <input
-                type="number"
-                name="cost"
-                value={formData.cost}
-                onChange={handleChange}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Suggested Store</label>
-              <select name="store" value={formData.store} onChange={handleChange}>
-                <option value="">Select or type below...</option>
-                {SUGGESTED_STORES.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              {!SUGGESTED_STORES.includes(formData.store) && formData.store && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--gray)', marginTop: '0.25rem' }}>
-                  Custom: {formData.store}
-                </div>
-              )}
-              <input
-                type="text"
-                name="store"
-                value={SUGGESTED_STORES.includes(formData.store) ? '' : formData.store}
-                onChange={handleChange}
-                placeholder="Or type a store name..."
-                style={{ marginTop: '0.4rem' }}
-              />
-            </div>
-            <div className="form-group">
-              <label>Requested By</label>
-              <select name="requestedBy" value={formData.requestedBy} onChange={handleChange}>
-                <option value="">Select...</option>
-                {TEAM_MEMBERS.map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Status</label>
-            <select name="status" value={formData.status} onChange={handleChange}>
-              <option value="pending">Pending</option>
-              <option value="ordered">Ordered</option>
-              <option value="received">Received</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Notes</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Brand preference, size, color, urgency..."
-              rows={2}
-            />
-          </div>
-
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary">
-              {isEdit ? 'Save Changes' : 'Add Request'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-
   return (
     <div className="app">
       <header className="header">
@@ -281,13 +159,93 @@ function Consumables() {
           <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
             Inventory
           </Link>
-          <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>
-            + Request Item
-          </button>
         </div>
       </header>
 
       <div className="container">
+        {/* Quick Add Bar */}
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--gray)' }}>
+            Quick Request
+          </div>
+          <form onSubmit={handleQuickAdd}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ flex: '0 0 auto' }}>
+                <select
+                  onChange={handlePresetSelect}
+                  value=""
+                  style={{ padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+                >
+                  <option value="">Common items...</option>
+                  {CONSUMABLE_PRESETS.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: '1 1 180px' }}>
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={quickName}
+                  onChange={(e) => setQuickName(e.target.value)}
+                  placeholder="Item name (or pick from dropdown)"
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.35rem', flex: '0 0 auto' }}>
+                <input
+                  type="number"
+                  value={quickQty}
+                  onChange={(e) => setQuickQty(e.target.value)}
+                  min="1"
+                  style={{ width: '55px', padding: '0.6rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', textAlign: 'center' }}
+                />
+                <select
+                  value={quickUnit}
+                  onChange={(e) => setQuickUnit(e.target.value)}
+                  style={{ padding: '0.6rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+                >
+                  {CONSUMABLE_UNITS.map(u => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: '0 0 auto' }}>
+                <select
+                  value={quickPerson}
+                  onChange={(e) => setQuickPerson(e.target.value)}
+                  style={{ padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+                >
+                  <option value="">Who?</option>
+                  {TEAM_MEMBERS.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={!quickName.trim()}>
+                Add
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setShowNotes(!showNotes)}
+                style={{ fontSize: '0.8rem' }}
+              >
+                {showNotes ? 'Hide notes' : '+ Notes'}
+              </button>
+            </div>
+            {showNotes && (
+              <input
+                type="text"
+                value={quickNotes}
+                onChange={(e) => setQuickNotes(e.target.value)}
+                placeholder="Brand, size, color, urgency..."
+                style={{ width: '100%', marginTop: '0.5rem', padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+              />
+            )}
+          </form>
+        </div>
+
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <div className="stat-card" style={{ borderTop: '3px solid #f59e0b' }}>
@@ -334,7 +292,7 @@ function Consumables() {
           {filteredItems.length === 0 ? (
             <div className="empty-state">
               <h3>No items</h3>
-              <p>{items.length === 0 ? 'Click "+ Request Item" to add your first consumable.' : 'No items match your filter.'}</p>
+              <p>{items.length === 0 ? 'Use the quick request bar above to add items.' : 'No items match your filter.'}</p>
             </div>
           ) : (
             <div className="table-container">
@@ -367,14 +325,10 @@ function Consumables() {
                           value={item.status}
                           onChange={(e) => handleStatusChange(item.id, e.target.value)}
                           style={{
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '0.2rem 0.5rem',
-                            borderRadius: '2px',
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.03em',
+                            border: 'none', cursor: 'pointer',
+                            padding: '0.2rem 0.5rem', borderRadius: '2px',
+                            fontSize: '0.7rem', fontWeight: 600,
+                            textTransform: 'uppercase', letterSpacing: '0.03em',
                             ...getStatusStyle(item.status)
                           }}
                         >
@@ -399,8 +353,87 @@ function Consumables() {
         </div>
       </div>
 
-      {showAddModal && renderModal(false)}
-      {editingItem && renderModal(true)}
+      {/* Edit Modal (full details) */}
+      {editingItem && (
+        <div className="modal-overlay" onClick={() => setEditingItem(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+            <div className="modal-header">
+              <h3>Edit Item</h3>
+              <button className="icon-btn" onClick={() => setEditingItem(null)}>x</button>
+            </div>
+
+            <form onSubmit={handleEditSave}>
+              <div className="form-group">
+                <label>Item Name *</label>
+                <input type="text" name="name" value={editForm.name} onChange={handleEditChange} required />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Quantity</label>
+                  <input type="number" name="quantity" value={editForm.quantity} onChange={handleEditChange} min="1" />
+                </div>
+                <div className="form-group">
+                  <label>Unit</label>
+                  <select name="unit" value={editForm.unit} onChange={handleEditChange}>
+                    {CONSUMABLE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Est. Cost ($)</label>
+                  <input type="number" name="cost" value={editForm.cost} onChange={handleEditChange} placeholder="0.00" min="0" step="0.01" />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Store</label>
+                  <select name="store" value={editForm.store} onChange={handleEditChange}>
+                    <option value="">Other / custom</option>
+                    {SUGGESTED_STORES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  {!editForm.store && (
+                    <input
+                      type="text"
+                      name="customStore"
+                      value={editForm.customStore}
+                      onChange={handleEditChange}
+                      placeholder="Type store name..."
+                      style={{ marginTop: '0.4rem' }}
+                    />
+                  )}
+                </div>
+                <div className="form-group">
+                  <label>Requested By</label>
+                  <select name="requestedBy" value={editForm.requestedBy} onChange={handleEditChange}>
+                    <option value="">Select...</option>
+                    {TEAM_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Status</label>
+                <select name="status" value={editForm.status} onChange={handleEditChange}>
+                  <option value="pending">Pending</option>
+                  <option value="ordered">Ordered</option>
+                  <option value="received">Received</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Notes</label>
+                <textarea name="notes" value={editForm.notes} onChange={handleEditChange} placeholder="Brand, size, color, urgency..." rows={2} />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn btn-outline" onClick={() => setEditingItem(null)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
