@@ -12,6 +12,7 @@ import {
 const projectsRef = collection(db, 'projects')
 const inventoryRef = collection(db, 'inventory')
 const consumablesRef = collection(db, 'consumables')
+const usersRef = collection(db, 'users')
 
 // Projects
 
@@ -129,6 +130,34 @@ export const updateConsumable = async (id, updates) => {
 
 export const deleteConsumable = async (id) => {
   await deleteDoc(doc(db, 'consumables', id))
+}
+
+// Users
+
+export const getUsers = async () => {
+  const snapshot = await getDocs(usersRef)
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export const getUserByUid = async (uid) => {
+  const snap = await getDoc(doc(db, 'users', uid))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}
+
+export const createUser = async (user) => {
+  await setDoc(doc(db, 'users', user.id), user)
+  return user
+}
+
+export const updateUser = async (id, updates) => {
+  const ref = doc(db, 'users', id)
+  await updateDoc(ref, { ...updates, updatedAt: new Date().toISOString() })
+  const snap = await getDoc(ref)
+  return { id: snap.id, ...snap.data() }
+}
+
+export const deleteUser = async (id) => {
+  await deleteDoc(doc(db, 'users', id))
 }
 
 // Empty templates

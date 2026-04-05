@@ -103,3 +103,11 @@ export const INVENTORY_STATUS_OPTIONS = [
   { id: 'maintenance', label: 'Maintenance', color: '#f59e0b' },
   { id: 'retired', label: 'Retired', color: '#6b7280' }
 ];
+
+export const USER_ROLES = {
+  admin: { id: 'admin', label: 'Admin', description: 'Full access to everything' },
+  purchasing: { id: 'purchasing', label: 'Purchasing', description: 'Admin access + purchasing dashboard' },
+  builder: { id: 'builder', label: 'Builder', description: 'Read-only projects + request consumables' },
+};
+
+export const DEFAULT_ROLE = 'builder';

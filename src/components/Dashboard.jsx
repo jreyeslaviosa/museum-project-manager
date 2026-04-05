@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjects, deleteProject } from '../utils/storage';
 import { TEAM_MEMBERS } from '../utils/constants';
+import { useUser } from '../utils/UserContext';
 
 function Dashboard() {
+  const { isAdmin } = useUser();
   const [projects, setProjects] = useState([]);
   const [activeView, setActiveView] = useState('overview');
 
@@ -147,12 +149,16 @@ function Dashboard() {
       <header className="header">
         <Link to="/"><h1>Museum Project Manager</h1></Link>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
-            Inventory
-          </Link>
-          <Link to="/project/new" className="btn btn-primary btn-small">
-            + New Project
-          </Link>
+          {isAdmin && (
+            <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              Inventory
+            </Link>
+          )}
+          {isAdmin && (
+            <Link to="/project/new" className="btn btn-primary btn-small">
+              + New Project
+            </Link>
+          )}
         </div>
       </header>
 
@@ -311,10 +317,12 @@ function Dashboard() {
             {projects.length === 0 ? (
               <div className="empty-state">
                 <h3>No projects yet</h3>
-                <p>Create your first exhibition project to get started.</p>
-                <Link to="/project/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                  + New Project
-                </Link>
+                <p>{isAdmin ? 'Create your first exhibition project to get started.' : 'No projects have been created yet.'}</p>
+                {isAdmin && (
+                  <Link to="/project/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                    + New Project
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="projects-grid">
@@ -326,13 +334,15 @@ function Dashboard() {
                     <Link to={`/project/${project.id}`} key={project.id} className="project-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <h3>{project.title || 'Untitled Project'}</h3>
-                        <button
-                          onClick={(e) => handleDelete(e, project.id)}
-                          className="icon-btn"
-                          title="Delete project"
-                        >
-                          ✕
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => handleDelete(e, project.id)}
+                            className="icon-btn"
+                            title="Delete project"
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                       <p className="artist">{project.artistName || 'No artist specified'}</p>
 

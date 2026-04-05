@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from './utils/firebase'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { UserProvider, useUser } from './utils/UserContext'
 import Login from './components/Login'
 import Home from './components/Home'
 import Dashboard from './components/Dashboard'
@@ -10,19 +8,12 @@ import NewProject from './components/NewProject'
 import Inventory from './components/Inventory'
 import InventoryDetail from './components/inventory/InventoryDetail'
 import Consumables from './components/Consumables'
+import Purchasing from './components/Purchasing'
+import UserManagement from './components/UserManagement'
 import './App.css'
 
-function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser)
-      setLoading(false)
-    })
-    return unsubscribe
-  }, [])
+function AppRoutes() {
+  const { user, loading, isAdmin, isPurchasing } = useUser()
 
   if (loading) {
     return (
@@ -46,15 +37,25 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/project/new" element={<NewProject />} />
+          {isAdmin && <Route path="/project/new" element={<NewProject />} />}
           <Route path="/project/:id" element={<ProjectDetail />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/inventory/:id" element={<InventoryDetail />} />
+          {isAdmin && <Route path="/inventory" element={<Inventory />} />}
+          {isAdmin && <Route path="/inventory/:id" element={<InventoryDetail />} />}
           <Route path="/consumables" element={<Consumables />} />
+          {(isAdmin || isPurchasing) && <Route path="/purchasing" element={<Purchasing />} />}
+          {isAdmin && <Route path="/users" element={<UserManagement />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </BrowserRouter>
+  )
+}
+
+function App() {
+  return (
+    <UserProvider>
+      <AppRoutes />
+    </UserProvider>
   )
 }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProject, updateProject } from '../utils/storage';
+import { useUser } from '../utils/UserContext';
 
 // Tab Components
 import OverviewTab from './tabs/OverviewTab';
@@ -12,7 +13,7 @@ import TasksTab from './tabs/TasksTab';
 import MaintenanceTab from './tabs/MaintenanceTab';
 import FullViewTab from './tabs/FullViewTab';
 
-const TABS = [
+const ADMIN_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'tech-rider', label: 'Tech Rider' },
   { id: 'equipment', label: 'Equipment' },
@@ -23,12 +24,22 @@ const TABS = [
   { id: 'full-view', label: 'Full View' }
 ];
 
+const BUILDER_TABS = [
+  { id: 'full-view', label: 'Full View' }
+];
+
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAdmin, isBuilder } = useUser();
   const [project, setProject] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(null);
   const [saving, setSaving] = useState(false);
+  const tabs = isBuilder ? BUILDER_TABS : ADMIN_TABS;
+
+  useEffect(() => {
+    setActiveTab(isBuilder ? 'full-view' : 'overview');
+  }, [isBuilder]);
 
   useEffect(() => {
     getProject(id).then(data => {
@@ -106,27 +117,38 @@ function ProjectDetail() {
             <p className="artist-name">{project.artistName || 'No artist specified'}</p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <select
-              value={project.status}
-              onChange={(e) => handleUpdate({ status: e.target.value })}
-              style={{
+            {isAdmin ? (
+              <select
+                value={project.status}
+                onChange={(e) => handleUpdate({ status: e.target.value })}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '6px',
+                  border: `2px solid ${getStatusColor(project.status)}`,
+                  background: 'white',
+                  fontWeight: 500
+                }}
+              >
+                <option value="planning">Planning</option>
+                <option value="in-progress">In Progress</option>
+                <option value="installed">Installed</option>
+                <option value="complete">Complete</option>
+              </select>
+            ) : (
+              <span style={{
                 padding: '0.5rem 1rem',
                 borderRadius: '6px',
                 border: `2px solid ${getStatusColor(project.status)}`,
-                background: 'white',
                 fontWeight: 500
-              }}
-            >
-              <option value="planning">Planning</option>
-              <option value="in-progress">In Progress</option>
-              <option value="installed">Installed</option>
-              <option value="complete">Complete</option>
-            </select>
+              }}>
+                {project.status === 'in-progress' ? 'In Progress' : project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Planning'}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="tabs">
-          {TABS.map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab.id}
               className={`tab ${activeTab === tab.id ? 'active' : ''}`}

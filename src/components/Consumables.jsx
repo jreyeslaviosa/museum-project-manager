@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { getConsumables, createConsumable, updateConsumable, deleteConsumable } from '../utils/storage';
 import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS, TEAM_MEMBERS } from '../utils/constants';
+import { useUser } from '../utils/UserContext';
 
 function Consumables() {
+  const { isAdmin } = useUser();
   const [items, setItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -153,12 +155,16 @@ function Consumables() {
       <header className="header">
         <Link to="/"><h1>Museum Project Manager</h1></Link>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/dashboard" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
-            Dashboard
-          </Link>
-          <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
-            Inventory
-          </Link>
+          {isAdmin && (
+            <>
+              <Link to="/dashboard" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                Dashboard
+              </Link>
+              <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+                Inventory
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -305,7 +311,7 @@ function Consumables() {
                     <th>Requested By</th>
                     <th>Status</th>
                     <th>Cost</th>
-                    <th>Actions</th>
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -321,29 +327,42 @@ function Consumables() {
                       <td>{item.store || '-'}</td>
                       <td>{item.requestedBy || '-'}</td>
                       <td>
-                        <select
-                          value={item.status}
-                          onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                          style={{
-                            border: 'none', cursor: 'pointer',
+                        {isAdmin ? (
+                          <select
+                            value={item.status}
+                            onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                            style={{
+                              border: 'none', cursor: 'pointer',
+                              padding: '0.2rem 0.5rem', borderRadius: '2px',
+                              fontSize: '0.7rem', fontWeight: 600,
+                              textTransform: 'uppercase', letterSpacing: '0.03em',
+                              ...getStatusStyle(item.status)
+                            }}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="ordered">Ordered</option>
+                            <option value="received">Received</option>
+                          </select>
+                        ) : (
+                          <span style={{
                             padding: '0.2rem 0.5rem', borderRadius: '2px',
                             fontSize: '0.7rem', fontWeight: 600,
                             textTransform: 'uppercase', letterSpacing: '0.03em',
                             ...getStatusStyle(item.status)
-                          }}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="ordered">Ordered</option>
-                          <option value="received">Received</option>
-                        </select>
+                          }}>
+                            {item.status}
+                          </span>
+                        )}
                       </td>
                       <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.25rem' }}>
-                          <button className="icon-btn" onClick={() => startEdit(item)}>Edit</button>
-                          <button className="icon-btn" onClick={() => handleDelete(item.id)}>Delete</button>
-                        </div>
-                      </td>
+                      {isAdmin && (
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            <button className="icon-btn" onClick={() => startEdit(item)}>Edit</button>
+                            <button className="icon-btn" onClick={() => handleDelete(item.id)}>Delete</button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
