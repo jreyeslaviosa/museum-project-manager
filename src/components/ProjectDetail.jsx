@@ -10,6 +10,7 @@ import InstallationTab from './tabs/InstallationTab';
 import BOMTab from './tabs/BOMTab';
 import TasksTab from './tabs/TasksTab';
 import MaintenanceTab from './tabs/MaintenanceTab';
+import FullViewTab from './tabs/FullViewTab';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -18,7 +19,8 @@ const TABS = [
   { id: 'installation', label: 'Installation' },
   { id: 'bom', label: 'BOM & Budget' },
   { id: 'tasks', label: 'Tasks' },
-  { id: 'maintenance', label: 'Maintenance' }
+  { id: 'maintenance', label: 'Maintenance' },
+  { id: 'full-view', label: 'Full View' }
 ];
 
 function ProjectDetail() {
@@ -68,6 +70,8 @@ function ProjectDetail() {
         return <TasksTab project={project} onUpdate={handleUpdate} />;
       case 'maintenance':
         return <MaintenanceTab project={project} onUpdate={handleUpdate} />;
+      case 'full-view':
+        return <FullViewTab project={project} />;
       default:
         return <OverviewTab project={project} onUpdate={handleUpdate} />;
     }
