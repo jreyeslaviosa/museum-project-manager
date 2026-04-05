@@ -8,15 +8,15 @@ function Dashboard() {
   const [activeView, setActiveView] = useState('overview');
 
   useEffect(() => {
-    setProjects(getProjects());
+    getProjects().then(setProjects);
   }, []);
 
-  const handleDelete = (e, id) => {
+  const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this project?')) {
-      deleteProject(id);
-      setProjects(getProjects());
+      await deleteProject(id);
+      setProjects(await getProjects());
     }
   };
 

@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './utils/firebase'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './components/Login'
 import Home from './components/Home'
@@ -10,14 +12,29 @@ import InventoryDetail from './components/inventory/InventoryDetail'
 import './App.css'
 
 function App() {
-  const [authenticated, setAuthenticated] = useState(
-    () => sessionStorage.getItem('authenticated') === 'true'
-  )
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!authenticated) {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser)
+      setLoading(false)
+    })
+    return unsubscribe
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <p style={{ color: 'var(--gray)' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
     return (
       <div className="app">
-        <Login onLogin={() => setAuthenticated(true)} />
+        <Login />
       </div>
     )
   }
@@ -26,7 +43,7 @@ function App() {
     <BrowserRouter basename="/museum-project-manager">
       <div className="app">
         <Routes>
-          <Route path="/" element={<Home onLogout={() => setAuthenticated(false)} />} />
+          <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/project/new" element={<NewProject />} />
           <Route path="/project/:id" element={<ProjectDetail />} />

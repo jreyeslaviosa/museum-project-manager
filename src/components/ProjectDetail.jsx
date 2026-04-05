@@ -29,17 +29,18 @@ function ProjectDetail() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const data = getProject(id);
-    if (!data) {
-      navigate('/');
-      return;
-    }
-    setProject(data);
+    getProject(id).then(data => {
+      if (!data) {
+        navigate('/');
+        return;
+      }
+      setProject(data);
+    });
   }, [id, navigate]);
 
-  const handleUpdate = (updates) => {
+  const handleUpdate = async (updates) => {
     setSaving(true);
-    const updated = updateProject(id, {
+    const updated = await updateProject(id, {
       ...updates,
       updatedAt: new Date().toISOString()
     });

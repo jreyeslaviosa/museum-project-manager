@@ -1,18 +1,23 @@
 import { useState } from 'react'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../utils/firebase'
 
-function Login({ onLogin }) {
-  const [username, setUsername] = useState('')
+function Login() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (username === 'admin' && password === 'madarts1234') {
-      sessionStorage.setItem('authenticated', 'true')
-      onLogin()
-    } else {
-      setError('Invalid username or password')
+    setError('')
+    setLoading(true)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (err) {
+      setError('Invalid email or password')
     }
+    setLoading(false)
   }
 
   return (
@@ -20,11 +25,11 @@ function Login({ onLogin }) {
       <form className="login-form" onSubmit={handleSubmit}>
         <h1>Museum Project Manager</h1>
         <div className="form-group">
-          <label>Username</label>
+          <label>Email</label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             autoFocus
           />
         </div>
@@ -37,8 +42,8 @@ function Login({ onLogin }) {
           />
         </div>
         {error && <p className="login-error">{error}</p>}
-        <button type="submit" className="btn btn-primary login-btn">
-          Sign In
+        <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
     </div>

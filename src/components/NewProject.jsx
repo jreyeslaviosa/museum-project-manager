@@ -19,7 +19,7 @@ function NewProject() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newProject = {
@@ -28,7 +28,7 @@ function NewProject() {
       id: uuidv4()
     };
 
-    createProject(newProject);
+    await createProject(newProject);
     navigate(`/project/${newProject.id}`);
   };
 

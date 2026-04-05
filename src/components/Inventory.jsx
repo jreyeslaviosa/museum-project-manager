@@ -18,24 +18,24 @@ function Inventory() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
-    setInventory(getInventory());
-    setProjects(getProjects());
+    getInventory().then(setInventory);
+    getProjects().then(setProjects);
   }, []);
 
-  const handleSaveItem = (item) => {
+  const handleSaveItem = async (item) => {
     if (editingItem) {
-      updateInventoryItem(item.id, item);
+      await updateInventoryItem(item.id, item);
     } else {
-      createInventoryItem(item);
+      await createInventoryItem(item);
     }
-    setInventory(getInventory());
+    setInventory(await getInventory());
     setShowAddModal(false);
     setEditingItem(null);
   };
 
-  const handleDeleteItem = (id) => {
-    deleteInventoryItem(id);
-    setInventory(getInventory());
+  const handleDeleteItem = async (id) => {
+    await deleteInventoryItem(id);
+    setInventory(await getInventory());
   };
 
   const handleEditItem = (item) => {
@@ -43,19 +43,19 @@ function Inventory() {
     setShowAddModal(true);
   };
 
-  const handleCheckout = (checkoutData, assignmentType) => {
+  const handleCheckout = async (checkoutData, assignmentType) => {
     const updatedItem = {
       ...checkoutItem,
       status: assignmentType || 'in-use',
       currentCheckout: checkoutData,
       quantityAvailable: Math.max(0, (checkoutItem.quantityAvailable || checkoutItem.quantity) - 1)
     };
-    updateInventoryItem(checkoutItem.id, updatedItem);
-    setInventory(getInventory());
+    await updateInventoryItem(checkoutItem.id, updatedItem);
+    setInventory(await getInventory());
     setCheckoutItem(null);
   };
 
-  const handleReturn = (returnData) => {
+  const handleReturn = async (returnData) => {
     const historyEntry = {
       ...checkoutItem.currentCheckout,
       ...returnData
@@ -69,12 +69,12 @@ function Inventory() {
       checkoutHistory: [...(checkoutItem.checkoutHistory || []), historyEntry],
       quantityAvailable: Math.min(checkoutItem.quantity, (checkoutItem.quantityAvailable || 0) + 1)
     };
-    updateInventoryItem(checkoutItem.id, updatedItem);
-    setInventory(getInventory());
+    await updateInventoryItem(checkoutItem.id, updatedItem);
+    setInventory(await getInventory());
     setCheckoutItem(null);
   };
 
-  const handleStartUse = () => {
+  const handleStartUse = async () => {
     const updatedItem = {
       ...checkoutItem,
       status: 'in-use',
@@ -84,12 +84,12 @@ function Inventory() {
         statusChangedAt: new Date().toISOString()
       }
     };
-    updateInventoryItem(checkoutItem.id, updatedItem);
-    setInventory(getInventory());
+    await updateInventoryItem(checkoutItem.id, updatedItem);
+    setInventory(await getInventory());
     setCheckoutItem(null);
   };
 
-  const handleCancelReservation = () => {
+  const handleCancelReservation = async () => {
     if (!window.confirm(`Cancel reservation for "${checkoutItem.name}"?`)) return;
 
     const updatedItem = {
@@ -98,13 +98,13 @@ function Inventory() {
       currentCheckout: null,
       quantityAvailable: Math.min(checkoutItem.quantity, (checkoutItem.quantityAvailable || 0) + 1)
     };
-    updateInventoryItem(checkoutItem.id, updatedItem);
-    setInventory(getInventory());
+    await updateInventoryItem(checkoutItem.id, updatedItem);
+    setInventory(await getInventory());
     setCheckoutItem(null);
   };
 
-  const handleImport = (importedItems) => {
-    const currentInventory = getInventory();
+  const handleImport = async (importedItems) => {
+    const currentInventory = await getInventory();
     const existingIds = new Set(currentInventory.map(i => i.id));
 
     importedItems.forEach(item => {
@@ -120,7 +120,7 @@ function Inventory() {
       }
     });
 
-    saveInventory(currentInventory);
+    await saveInventory(currentInventory);
     setInventory(currentInventory);
   };
 

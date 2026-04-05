@@ -1,43 +1,50 @@
-const STORAGE_KEY = 'museum_projects';
-const INVENTORY_KEY = 'museum_inventory';
+import { db } from './firebase'
+import {
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+} from 'firebase/firestore'
 
-export const getProjects = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
-};
+const projectsRef = collection(db, 'projects')
+const inventoryRef = collection(db, 'inventory')
 
-export const saveProjects = (projects) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-};
+// Projects
 
-export const getProject = (id) => {
-  const projects = getProjects();
-  return projects.find(p => p.id === id);
-};
+export const getProjects = async () => {
+  const snapshot = await getDocs(projectsRef)
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+}
 
-export const createProject = (project) => {
-  const projects = getProjects();
-  projects.push(project);
-  saveProjects(projects);
-  return project;
-};
+export const getProject = async (id) => {
+  const snap = await getDoc(doc(db, 'projects', id))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}
 
-export const updateProject = (id, updates) => {
-  const projects = getProjects();
-  const index = projects.findIndex(p => p.id === id);
-  if (index !== -1) {
-    projects[index] = { ...projects[index], ...updates };
-    saveProjects(projects);
-    return projects[index];
+export const createProject = async (project) => {
+  await setDoc(doc(db, 'projects', project.id), project)
+  return project
+}
+
+export const updateProject = async (id, updates) => {
+  const ref = doc(db, 'projects', id)
+  await updateDoc(ref, { ...updates, updatedAt: new Date().toISOString() })
+  const snap = await getDoc(ref)
+  return { id: snap.id, ...snap.data() }
+}
+
+export const deleteProject = async (id) => {
+  await deleteDoc(doc(db, 'projects', id))
+}
+
+export const saveProjects = async (projects) => {
+  for (const project of projects) {
+    await setDoc(doc(db, 'projects', project.id), project)
   }
-  return null;
-};
-
-export const deleteProject = (id) => {
-  const projects = getProjects();
-  const filtered = projects.filter(p => p.id !== id);
-  saveProjects(filtered);
-};
+}
 
 export const createEmptyProject = () => ({
   id: '',
@@ -55,58 +62,49 @@ export const createEmptyProject = () => ({
   bomList: [],
   tasks: [],
   notes: '',
-  // Exhibition dates
   openingDate: '',
   closingDate: '',
   deinstallDate: '',
-  // Budget
   budget: 0,
-  // Maintenance
   maintenanceLog: [],
-  // Inventory items assigned to this project
   inventoryItems: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
-});
+})
 
-// Inventory CRUD operations
-export const getInventory = () => {
-  const data = localStorage.getItem(INVENTORY_KEY);
-  return data ? JSON.parse(data) : [];
-};
+// Inventory
 
-export const saveInventory = (inventory) => {
-  localStorage.setItem(INVENTORY_KEY, JSON.stringify(inventory));
-};
+export const getInventory = async () => {
+  const snapshot = await getDocs(inventoryRef)
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+}
 
-export const getInventoryItem = (id) => {
-  const inventory = getInventory();
-  return inventory.find(item => item.id === id);
-};
+export const getInventoryItem = async (id) => {
+  const snap = await getDoc(doc(db, 'inventory', id))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}
 
-export const createInventoryItem = (item) => {
-  const inventory = getInventory();
-  inventory.push(item);
-  saveInventory(inventory);
-  return item;
-};
+export const createInventoryItem = async (item) => {
+  await setDoc(doc(db, 'inventory', item.id), item)
+  return item
+}
 
-export const updateInventoryItem = (id, updates) => {
-  const inventory = getInventory();
-  const index = inventory.findIndex(item => item.id === id);
-  if (index !== -1) {
-    inventory[index] = { ...inventory[index], ...updates, updatedAt: new Date().toISOString() };
-    saveInventory(inventory);
-    return inventory[index];
+export const updateInventoryItem = async (id, updates) => {
+  const ref = doc(db, 'inventory', id)
+  await updateDoc(ref, { ...updates, updatedAt: new Date().toISOString() })
+  const snap = await getDoc(ref)
+  return { id: snap.id, ...snap.data() }
+}
+
+export const deleteInventoryItem = async (id) => {
+  await deleteDoc(doc(db, 'inventory', id))
+}
+
+export const saveInventory = async (inventory) => {
+  for (const item of inventory) {
+    await setDoc(doc(db, 'inventory', item.id), item)
   }
-  return null;
-};
-
-export const deleteInventoryItem = (id) => {
-  const inventory = getInventory();
-  const filtered = inventory.filter(item => item.id !== id);
-  saveInventory(filtered);
-};
+}
 
 export const createEmptyInventoryItem = () => ({
   id: '',
@@ -135,4 +133,4 @@ export const createEmptyInventoryItem = () => ({
   notes: '',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
-});
+})

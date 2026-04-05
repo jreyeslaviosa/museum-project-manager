@@ -18,7 +18,7 @@ function EquipmentTab({ project, onUpdate }) {
   const [returnDate, setReturnDate] = useState('');
 
   useEffect(() => {
-    setInventory(getInventory());
+    getInventory().then(setInventory);
   }, []);
 
   const artistItems = project.artistProviding || [];
@@ -132,13 +132,13 @@ function EquipmentTab({ project, onUpdate }) {
     return new Date(item.currentCheckout.expectedReturn) < new Date(project.openingDate);
   };
 
-  const handleAssignInventory = () => {
+  const handleAssignInventory = async () => {
     if (selectedInventoryItems.length === 0 || !checkoutPerson) {
       alert('Please select items and a team member');
       return;
     }
 
-    selectedInventoryItems.forEach(itemId => {
+    for (const itemId of selectedInventoryItems) {
       const item = inventory.find(i => i.id === itemId);
       if (item) {
         const checkoutData = {
@@ -151,15 +151,15 @@ function EquipmentTab({ project, onUpdate }) {
           notes: assignmentType === 'reserved' ? 'Reserved via Equipment tab' : 'Checked out via Equipment tab'
         };
 
-        updateInventoryItem(item.id, {
+        await updateInventoryItem(item.id, {
           status: assignmentType,
           currentCheckout: checkoutData,
           quantityAvailable: Math.max(0, (item.quantityAvailable || item.quantity) - 1)
         });
       }
-    });
+    }
 
-    setInventory(getInventory());
+    setInventory(await getInventory());
     setSelectedInventoryItems([]);
     setCheckoutPerson('');
     setAssignmentType('reserved');
@@ -168,8 +168,8 @@ function EquipmentTab({ project, onUpdate }) {
     setShowInventoryModal(false);
   };
 
-  const handleChangeStatus = (item, newStatus) => {
-    updateInventoryItem(item.id, {
+  const handleChangeStatus = async (item, newStatus) => {
+    await updateInventoryItem(item.id, {
       status: newStatus,
       currentCheckout: {
         ...item.currentCheckout,
@@ -177,22 +177,22 @@ function EquipmentTab({ project, onUpdate }) {
         statusChangedAt: new Date().toISOString()
       }
     });
-    setInventory(getInventory());
+    setInventory(await getInventory());
   };
 
-  const handleCancelReservation = (item) => {
+  const handleCancelReservation = async (item) => {
     if (!window.confirm(`Cancel reservation for "${item.name}"?`)) return;
 
-    updateInventoryItem(item.id, {
+    await updateInventoryItem(item.id, {
       status: 'available',
       currentCheckout: null,
       quantityAvailable: Math.min(item.quantity, (item.quantityAvailable || 0) + 1)
     });
 
-    setInventory(getInventory());
+    setInventory(await getInventory());
   };
 
-  const handleReturnInventoryItem = (item) => {
+  const handleReturnInventoryItem = async (item) => {
     if (!window.confirm(`Return "${item.name}" to inventory?`)) return;
 
     const historyEntry = {
@@ -203,14 +203,14 @@ function EquipmentTab({ project, onUpdate }) {
       notes: 'Returned from Equipment tab'
     };
 
-    updateInventoryItem(item.id, {
+    await updateInventoryItem(item.id, {
       status: 'available',
       currentCheckout: null,
       checkoutHistory: [...(item.checkoutHistory || []), historyEntry],
       quantityAvailable: Math.min(item.quantity, (item.quantityAvailable || 0) + 1)
     });
 
-    setInventory(getInventory());
+    setInventory(await getInventory());
   };
 
   const renderItem = (item, type) => {

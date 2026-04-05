@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+import { auth } from '../utils/firebase'
 
-function Home({ onLogout }) {
+function Home() {
   const handleLogout = () => {
-    sessionStorage.removeItem('authenticated')
-    onLogout()
+    signOut(auth)
   }
 
   return (
