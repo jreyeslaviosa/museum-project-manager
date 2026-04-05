@@ -21,6 +21,7 @@ function OverviewTab({ project, onUpdate }) {
     technicalLead: project.technicalLead || '',
     description: project.description || '',
     notes: project.notes || '',
+    installDate: project.installDate || '',
     openingDate: project.openingDate || '',
     closingDate: project.closingDate || '',
     deinstallDate: project.deinstallDate || '',
@@ -29,7 +30,23 @@ function OverviewTab({ project, onUpdate }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      // Clear dates that would violate ordering
+      if (name === 'installDate' && value) {
+        if (updated.openingDate && updated.openingDate < value) updated.openingDate = '';
+        if (updated.closingDate && updated.closingDate < value) updated.closingDate = '';
+        if (updated.deinstallDate && updated.deinstallDate < value) updated.deinstallDate = '';
+      }
+      if (name === 'openingDate' && value) {
+        if (updated.closingDate && updated.closingDate < value) updated.closingDate = '';
+        if (updated.deinstallDate && updated.deinstallDate < value) updated.deinstallDate = '';
+      }
+      if (name === 'closingDate' && value) {
+        if (updated.deinstallDate && updated.deinstallDate < value) updated.deinstallDate = '';
+      }
+      return updated;
+    });
   };
 
   const handleSave = () => {
@@ -48,6 +65,7 @@ function OverviewTab({ project, onUpdate }) {
       technicalLead: project.technicalLead || '',
       description: project.description || '',
       notes: project.notes || '',
+      installDate: project.installDate || '',
       openingDate: project.openingDate || '',
       closingDate: project.closingDate || '',
       deinstallDate: project.deinstallDate || '',
@@ -125,14 +143,26 @@ function OverviewTab({ project, onUpdate }) {
 
         <div className="form-row">
           <div className="form-group">
+            <label>Install Date</label>
+            <input
+              type="date"
+              name="installDate"
+              value={formData.installDate}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group">
             <label>Opening Date</label>
             <input
               type="date"
               name="openingDate"
               value={formData.openingDate}
               onChange={handleChange}
+              min={formData.installDate || undefined}
             />
           </div>
+        </div>
+        <div className="form-row">
           <div className="form-group">
             <label>Closing Date</label>
             <input
@@ -140,6 +170,7 @@ function OverviewTab({ project, onUpdate }) {
               name="closingDate"
               value={formData.closingDate}
               onChange={handleChange}
+              min={formData.openingDate || undefined}
             />
           </div>
           <div className="form-group">
@@ -149,6 +180,7 @@ function OverviewTab({ project, onUpdate }) {
               name="deinstallDate"
               value={formData.deinstallDate}
               onChange={handleChange}
+              min={formData.closingDate || undefined}
             />
           </div>
         </div>
@@ -215,7 +247,7 @@ function OverviewTab({ project, onUpdate }) {
         </div>
 
         {/* Exhibition Dates */}
-        {(project.openingDate || project.closingDate || project.deinstallDate) && (
+        {(project.installDate || project.openingDate || project.closingDate || project.deinstallDate) && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -225,6 +257,16 @@ function OverviewTab({ project, onUpdate }) {
             borderRadius: '8px',
             marginBottom: '1rem'
           }}>
+            {project.installDate && (
+              <div>
+                <label style={{ fontWeight: 500, color: 'var(--gray)', fontSize: '0.85rem' }}>
+                  Install Date
+                </label>
+                <p style={{ marginTop: '0.25rem', fontWeight: 500, color: '#3b82f6' }}>
+                  {new Date(project.installDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+            )}
             {project.openingDate && (
               <div>
                 <label style={{ fontWeight: 500, color: 'var(--gray)', fontSize: '0.85rem' }}>

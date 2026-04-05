@@ -1,13 +1,14 @@
 export const TEAM_MEMBERS = [
-  'Dylan',
-  'Tiger',
-  'Rommel',
-  'Rodrigo',
+  'Andre',
   'Daniel',
-  'Tiffani',
-  'Sofia',
+  'Dylan',
+  'Jaime',
   'Marc',
-  'Jaime'
+  'Rodrigo',
+  'Rommel',
+  'Sofia',
+  'Tiffani',
+  'Tiger'
 ];
 
 export const INVENTORY_CATEGORIES = [

@@ -62,6 +62,7 @@ export const createEmptyProject = () => ({
   bomList: [],
   tasks: [],
   notes: '',
+  installDate: '',
   openingDate: '',
   closingDate: '',
   deinstallDate: '',

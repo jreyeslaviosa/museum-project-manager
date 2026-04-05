@@ -5,10 +5,10 @@ import { getInventory, updateInventoryItem } from '../../utils/storage';
 import { INVENTORY_CATEGORIES, TEAM_MEMBERS } from '../../utils/constants';
 
 function EquipmentTab({ project, onUpdate }) {
-  const [newArtistItem, setNewArtistItem] = useState('');
-  const [newMuseumItem, setNewMuseumItem] = useState('');
+  const [newArtistItem, setNewArtistItem] = useState({ name: '', quantity: 1, notes: '' });
+  const [newMuseumItem, setNewMuseumItem] = useState({ name: '', quantity: 1, notes: '' });
   const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState({ name: '', quantity: 1, notes: '' });
   const [inventory, setInventory] = useState([]);
   const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [selectedInventoryItems, setSelectedInventoryItems] = useState([]);
@@ -26,20 +26,30 @@ function EquipmentTab({ project, onUpdate }) {
 
   const addArtistItem = (e) => {
     e.preventDefault();
-    if (!newArtistItem.trim()) return;
+    if (!newArtistItem.name.trim()) return;
     onUpdate({
-      artistProviding: [...artistItems, { id: uuidv4(), name: newArtistItem.trim() }]
+      artistProviding: [...artistItems, {
+        id: uuidv4(),
+        name: newArtistItem.name.trim(),
+        quantity: parseInt(newArtistItem.quantity) || 1,
+        notes: newArtistItem.notes.trim()
+      }]
     });
-    setNewArtistItem('');
+    setNewArtistItem({ name: '', quantity: 1, notes: '' });
   };
 
   const addMuseumItem = (e) => {
     e.preventDefault();
-    if (!newMuseumItem.trim()) return;
+    if (!newMuseumItem.name.trim()) return;
     onUpdate({
-      museumProviding: [...museumItems, { id: uuidv4(), name: newMuseumItem.trim() }]
+      museumProviding: [...museumItems, {
+        id: uuidv4(),
+        name: newMuseumItem.name.trim(),
+        quantity: parseInt(newMuseumItem.quantity) || 1,
+        notes: newMuseumItem.notes.trim()
+      }]
     });
-    setNewMuseumItem('');
+    setNewMuseumItem({ name: '', quantity: 1, notes: '' });
   };
 
   const removeArtistItem = (id) => {
@@ -54,29 +64,35 @@ function EquipmentTab({ project, onUpdate }) {
     });
   };
 
-  const startEditing = (id, name) => {
+  const startEditing = (id, item) => {
     setEditingId(id);
-    setEditValue(name);
+    setEditValue({ name: item.name, quantity: item.quantity || 1, notes: item.notes || '' });
   };
 
   const saveEdit = (type) => {
-    if (!editValue.trim()) return;
+    if (!editValue.name.trim()) return;
+
+    const updates = {
+      name: editValue.name.trim(),
+      quantity: parseInt(editValue.quantity) || 1,
+      notes: editValue.notes.trim()
+    };
 
     if (type === 'artist') {
       onUpdate({
         artistProviding: artistItems.map(item =>
-          item.id === editingId ? { ...item, name: editValue.trim() } : item
+          item.id === editingId ? { ...item, ...updates } : item
         )
       });
     } else {
       onUpdate({
         museumProviding: museumItems.map(item =>
-          item.id === editingId ? { ...item, name: editValue.trim() } : item
+          item.id === editingId ? { ...item, ...updates } : item
         )
       });
     }
     setEditingId(null);
-    setEditValue('');
+    setEditValue({ name: '', quantity: 1, notes: '' });
   };
 
   const moveItem = (id, from, to) => {
@@ -217,34 +233,63 @@ function EquipmentTab({ project, onUpdate }) {
     const isEditing = editingId === item.id;
 
     return (
-      <div key={item.id} className="equipment-item">
+      <div key={item.id} className="equipment-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.25rem' }}>
         {isEditing ? (
-          <div className="inline-edit" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <input
+                type="text"
+                value={editValue.name}
+                onChange={(e) => setEditValue(prev => ({ ...prev, name: e.target.value }))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveEdit(type);
+                  if (e.key === 'Escape') setEditingId(null);
+                }}
+                placeholder="Item name"
+                autoFocus
+                style={{ flex: 1, padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+              />
+              <input
+                type="number"
+                value={editValue.quantity}
+                onChange={(e) => setEditValue(prev => ({ ...prev, quantity: e.target.value }))}
+                min="1"
+                style={{ width: '60px', padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+              />
+            </div>
             <input
               type="text"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') saveEdit(type);
-                if (e.key === 'Escape') setEditingId(null);
-              }}
-              autoFocus
-              style={{ flex: 1 }}
+              value={editValue.notes}
+              onChange={(e) => setEditValue(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Notes (e.g., 4 kilos of clay, 30m LED strips)"
+              style={{ padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem' }}
             />
-            <button className="btn btn-small btn-primary" onClick={() => saveEdit(type)}>
-              Save
-            </button>
-            <button className="btn btn-small btn-outline" onClick={() => setEditingId(null)}>
-              Cancel
-            </button>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button className="btn btn-small btn-primary" onClick={() => saveEdit(type)}>Save</button>
+              <button className="btn btn-small btn-outline" onClick={() => setEditingId(null)}>Cancel</button>
+            </div>
           </div>
         ) : (
-          <>
-            <span>{item.name}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <span style={{ fontWeight: 500 }}>
+                {item.name}
+                {(item.quantity || 1) > 1 && (
+                  <span style={{ color: 'var(--gray)', fontWeight: 400, marginLeft: '0.4rem' }}>
+                    x{item.quantity}
+                  </span>
+                )}
+              </span>
+              {item.notes && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--gray)', marginTop: '0.15rem' }}>
+                  {item.notes}
+                </div>
+              )}
+            </div>
             <div className="actions">
               <button
                 className="icon-btn"
-                onClick={() => startEditing(item.id, item.name)}
+                onClick={() => startEditing(item.id, item)}
                 title="Edit"
               >
                 Edit
@@ -264,7 +309,7 @@ function EquipmentTab({ project, onUpdate }) {
                 ✕
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     );
@@ -336,14 +381,34 @@ function EquipmentTab({ project, onUpdate }) {
               artistItems.map(item => renderItem(item, 'artist'))
             )}
 
-            <form onSubmit={addArtistItem} className="add-item-form">
-              <input
-                type="text"
-                placeholder="Add item..."
-                value={newArtistItem}
-                onChange={(e) => setNewArtistItem(e.target.value)}
-              />
-              <button type="submit" className="btn btn-small btn-primary">Add</button>
+            <form onSubmit={addArtistItem} style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <input
+                  type="text"
+                  placeholder="Item name..."
+                  value={newArtistItem.name}
+                  onChange={(e) => setNewArtistItem(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ flex: 1, padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+                />
+                <input
+                  type="number"
+                  placeholder="Qty"
+                  value={newArtistItem.quantity}
+                  onChange={(e) => setNewArtistItem(prev => ({ ...prev, quantity: e.target.value }))}
+                  min="1"
+                  style={{ width: '60px', padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <input
+                  type="text"
+                  placeholder="Notes (optional)"
+                  value={newArtistItem.notes}
+                  onChange={(e) => setNewArtistItem(prev => ({ ...prev, notes: e.target.value }))}
+                  style={{ flex: 1, padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem' }}
+                />
+                <button type="submit" className="btn btn-small btn-primary">Add</button>
+              </div>
             </form>
           </div>
 
@@ -359,14 +424,34 @@ function EquipmentTab({ project, onUpdate }) {
               museumItems.map(item => renderItem(item, 'museum'))
             )}
 
-            <form onSubmit={addMuseumItem} className="add-item-form">
-              <input
-                type="text"
-                placeholder="Add item..."
-                value={newMuseumItem}
-                onChange={(e) => setNewMuseumItem(e.target.value)}
-              />
-              <button type="submit" className="btn btn-small btn-primary">Add</button>
+            <form onSubmit={addMuseumItem} style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <input
+                  type="text"
+                  placeholder="Item name..."
+                  value={newMuseumItem.name}
+                  onChange={(e) => setNewMuseumItem(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ flex: 1, padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+                />
+                <input
+                  type="number"
+                  placeholder="Qty"
+                  value={newMuseumItem.quantity}
+                  onChange={(e) => setNewMuseumItem(prev => ({ ...prev, quantity: e.target.value }))}
+                  min="1"
+                  style={{ width: '60px', padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <input
+                  type="text"
+                  placeholder="Notes (optional)"
+                  value={newMuseumItem.notes}
+                  onChange={(e) => setNewMuseumItem(prev => ({ ...prev, notes: e.target.value }))}
+                  style={{ flex: 1, padding: '0.4rem 0.6rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem' }}
+                />
+                <button type="submit" className="btn btn-small btn-primary">Add</button>
+              </div>
             </form>
           </div>
         </div>
