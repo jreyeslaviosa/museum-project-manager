@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { TEAM_MEMBERS } from '../../utils/constants';
 
 function BOMTab({ project, onUpdate }) {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -11,7 +12,8 @@ function BOMTab({ project, onUpdate }) {
     status: 'in-stock',
     supplier: '',
     cost: '',
-    notes: ''
+    notes: '',
+    requestedBy: ''
   });
 
   const bomList = project.bomList || [];
@@ -29,7 +31,8 @@ function BOMTab({ project, onUpdate }) {
       status: 'in-stock',
       supplier: '',
       cost: '',
-      notes: ''
+      notes: '',
+      requestedBy: ''
     });
   };
 
@@ -83,7 +86,8 @@ function BOMTab({ project, onUpdate }) {
       status: item.status,
       supplier: item.supplier || '',
       cost: item.cost || '',
-      notes: item.notes || ''
+      notes: item.notes || '',
+      requestedBy: item.requestedBy || ''
     });
     setEditingItem(item);
   };
@@ -194,6 +198,16 @@ function BOMTab({ project, onUpdate }) {
                 step="0.01"
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Requested By</label>
+            <select name="requestedBy" value={formData.requestedBy} onChange={handleChange}>
+              <option value="">Select...</option>
+              {TEAM_MEMBERS.map(member => (
+                <option key={member} value={member}>{member}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">
@@ -323,6 +337,7 @@ function BOMTab({ project, onUpdate }) {
                   <th>Item</th>
                   <th>Qty</th>
                   <th>Status</th>
+                  <th>Requested By</th>
                   <th>Supplier</th>
                   <th>Unit Cost</th>
                   <th>Total</th>
@@ -351,6 +366,7 @@ function BOMTab({ project, onUpdate }) {
                         <option value="ordered">Ordered</option>
                       </select>
                     </td>
+                    <td>{item.requestedBy || '—'}</td>
                     <td>{item.supplier || '—'}</td>
                     <td>{item.cost ? `$${item.cost.toFixed(2)}` : '—'}</td>
                     <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '—'}</td>
@@ -385,6 +401,7 @@ function BOMTab({ project, onUpdate }) {
                 <li key={item.id} style={{ marginBottom: '0.5rem' }}>
                   <strong>{item.name}</strong> — {item.quantity} {item.unit}
                   {item.supplier && <span style={{ color: 'var(--gray)' }}> (from {item.supplier})</span>}
+                  {item.requestedBy && <span style={{ color: 'var(--gray)' }}> — requested by {item.requestedBy}</span>}
                 </li>
               ))
             }

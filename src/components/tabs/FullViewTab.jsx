@@ -233,6 +233,7 @@ function FullViewTab({ project }) {
                 <tr>
                   <th>Item</th>
                   <th>Qty</th>
+                  <th>Requested By</th>
                   <th>Supplier</th>
                   <th>Status</th>
                   <th>Cost</th>
@@ -246,6 +247,7 @@ function FullViewTab({ project }) {
                       {item.notes && <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{item.notes}</div>}
                     </td>
                     <td>{item.quantity} {item.unit || ''}</td>
+                    <td>{item.requestedBy || '-'}</td>
                     <td>{item.supplier || '-'}</td>
                     <td>
                       <span className={`bom-status ${item.status}`}>
@@ -259,7 +261,7 @@ function FullViewTab({ project }) {
               {bomList.some(i => i.cost) && (
                 <tfoot>
                   <tr>
-                    <td colSpan="4" style={{ fontWeight: 600, textAlign: 'right' }}>Total</td>
+                    <td colSpan="5" style={{ fontWeight: 600, textAlign: 'right' }}>Total</td>
                     <td style={{ fontWeight: 600 }}>
                       ${bomList.reduce((sum, i) => sum + (i.cost ? i.cost * i.quantity : 0), 0).toFixed(2)}
                     </td>

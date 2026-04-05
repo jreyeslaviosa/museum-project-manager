@@ -662,6 +662,7 @@ function Dashboard() {
                       <tr>
                         <th>Item</th>
                         <th>Project</th>
+                        <th>Requested By</th>
                         <th>Qty</th>
                         <th>Supplier</th>
                         <th>Est. Cost</th>
@@ -679,6 +680,7 @@ function Dashboard() {
                             )}
                           </td>
                           <td style={{ fontSize: '0.9rem' }}>{item.projectTitle}</td>
+                          <td>{item.requestedBy || '—'}</td>
                           <td>{item.quantity} {item.unit}</td>
                           <td>{item.supplier || '—'}</td>
                           <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '—'}</td>
