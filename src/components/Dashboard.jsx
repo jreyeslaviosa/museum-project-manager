@@ -163,90 +163,94 @@ function Dashboard() {
       </header>
 
       <div className="container">
-        {/* View Tabs */}
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          marginBottom: '2rem',
-          borderBottom: '2px solid var(--border)',
-          paddingBottom: '0.5rem',
-          overflowX: 'auto'
-        }}>
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'active', label: 'Active Installations', count: activeInstallations.length },
-            { id: 'team', label: 'Team Workload' },
-            { id: 'calendar', label: 'Upcoming' },
-            { id: 'shopping', label: 'Shopping List', count: itemsToBuy.length }
-          ].map(view => (
-            <button
-              key={view.id}
-              onClick={() => setActiveView(view.id)}
-              style={{
-                padding: '0.75rem 1.25rem',
-                border: 'none',
-                background: activeView === view.id ? 'var(--secondary)' : 'transparent',
-                color: activeView === view.id ? 'white' : 'var(--dark)',
-                borderRadius: '6px 6px 0 0',
-                cursor: 'pointer',
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.95rem',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {view.label}
-              {view.count > 0 && (
-                <span style={{
-                  background: activeView === view.id ? 'rgba(255,255,255,0.2)' : 'var(--accent)',
-                  color: 'white',
-                  padding: '0.1rem 0.5rem',
-                  borderRadius: '10px',
-                  fontSize: '0.8rem'
-                }}>
-                  {view.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* View Tabs - admin only */}
+        {isAdmin && (
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            marginBottom: '2rem',
+            borderBottom: '2px solid var(--border)',
+            paddingBottom: '0.5rem',
+            overflowX: 'auto'
+          }}>
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'active', label: 'Active Installations', count: activeInstallations.length },
+              { id: 'team', label: 'Team Workload' },
+              { id: 'calendar', label: 'Upcoming' },
+              { id: 'shopping', label: 'Shopping List', count: itemsToBuy.length }
+            ].map(view => (
+              <button
+                key={view.id}
+                onClick={() => setActiveView(view.id)}
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  border: 'none',
+                  background: activeView === view.id ? 'var(--secondary)' : 'transparent',
+                  color: activeView === view.id ? 'white' : 'var(--dark)',
+                  borderRadius: '6px 6px 0 0',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.95rem',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {view.label}
+                {view.count > 0 && (
+                  <span style={{
+                    background: activeView === view.id ? 'rgba(255,255,255,0.2)' : 'var(--accent)',
+                    color: 'white',
+                    padding: '0.1rem 0.5rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem'
+                  }}>
+                    {view.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Overview Tab */}
         {activeView === 'overview' && (
           <>
-            {/* Stats Cards */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '1rem',
-              marginBottom: '2rem'
-            }}>
-              <div className="card" style={{ textAlign: 'center', margin: 0 }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>{stats.total}</div>
-                <div style={{ color: 'var(--gray)' }}>Total Projects</div>
+            {/* Stats Cards - admin only */}
+            {isAdmin && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '1rem',
+                marginBottom: '2rem'
+              }}>
+                <div className="card" style={{ textAlign: 'center', margin: 0 }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>{stats.total}</div>
+                  <div style={{ color: 'var(--gray)' }}>Total Projects</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #f59e0b' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f59e0b' }}>{stats.planning}</div>
+                  <div style={{ color: 'var(--gray)' }}>Planning</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #3b82f6' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#3b82f6' }}>{stats.inProgress}</div>
+                  <div style={{ color: 'var(--gray)' }}>In Progress</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #8b5cf6' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>{stats.installed}</div>
+                  <div style={{ color: 'var(--gray)' }}>Installed</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #10b981' }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{stats.complete}</div>
+                  <div style={{ color: 'var(--gray)' }}>Complete</div>
+                </div>
               </div>
-              <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #f59e0b' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f59e0b' }}>{stats.planning}</div>
-                <div style={{ color: 'var(--gray)' }}>Planning</div>
-              </div>
-              <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #3b82f6' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#3b82f6' }}>{stats.inProgress}</div>
-                <div style={{ color: 'var(--gray)' }}>In Progress</div>
-              </div>
-              <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #8b5cf6' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#8b5cf6' }}>{stats.installed}</div>
-                <div style={{ color: 'var(--gray)' }}>Installed</div>
-              </div>
-              <div className="card" style={{ textAlign: 'center', margin: 0, borderTop: '4px solid #10b981' }}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#10b981' }}>{stats.complete}</div>
-                <div style={{ color: 'var(--gray)' }}>Complete</div>
-              </div>
-            </div>
+            )}
 
-            {/* Alerts Section */}
-            {(overdueTasks.length > 0 || upcomingOpenings.length > 0) && (
+            {/* Alerts Section - admin only */}
+            {isAdmin && (overdueTasks.length > 0 || upcomingOpenings.length > 0) && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 {overdueTasks.length > 0 && (
                   <div className="card" style={{ margin: 0, borderLeft: '4px solid var(--accent)' }}>
@@ -311,7 +315,7 @@ function Dashboard() {
 
             {/* Projects Grid */}
             <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '1rem' }}>
-              <h2>All Projects</h2>
+              <h2>{isAdmin ? 'All Projects' : 'Projects'}</h2>
             </div>
 
             {projects.length === 0 ? (
@@ -410,8 +414,8 @@ function Dashboard() {
               </div>
             )}
 
-            {/* Upcoming Milestones */}
-            {upcomingMilestones.length > 0 && (
+            {/* Upcoming Milestones - admin only */}
+            {isAdmin && upcomingMilestones.length > 0 && (
               <div className="card" style={{ marginTop: '2rem' }}>
                 <div className="card-header">
                   <h3>Upcoming Milestones</h3>
@@ -452,8 +456,8 @@ function Dashboard() {
           </>
         )}
 
-        {/* Active Installations Tab */}
-        {activeView === 'active' && (
+        {/* Active Installations Tab - admin only */}
+        {isAdmin && activeView === 'active' && (
           <div className="card">
             <div className="card-header">
               <h2>Active Installations</h2>
@@ -524,8 +528,8 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Team Workload Tab */}
-        {activeView === 'team' && (
+        {/* Team Workload Tab - admin only */}
+        {isAdmin && activeView === 'team' && (
           <div className="card">
             <div className="card-header">
               <h2>Team Workload</h2>
@@ -572,8 +576,8 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Calendar/Upcoming Tab */}
-        {activeView === 'calendar' && (
+        {/* Calendar/Upcoming Tab - admin only */}
+        {isAdmin && activeView === 'calendar' && (
           <div className="card">
             <div className="card-header">
               <h2>Upcoming Deadlines</h2>
@@ -633,8 +637,8 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Shopping List Tab */}
-        {activeView === 'shopping' && (
+        {/* Shopping List Tab - admin only */}
+        {isAdmin && activeView === 'shopping' && (
           <div className="card">
             <div className="card-header">
               <h2>Shopping List</h2>

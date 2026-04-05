@@ -31,7 +31,7 @@ const BUILDER_TABS = [
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, isBuilder, role } = useUser();
+  const { isAdmin, isBuilder } = useUser();
   const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -110,9 +110,6 @@ function ProjectDetail() {
 
       <div className="container">
         <Link to="/dashboard" className="back-link">← Back to Projects</Link>
-        <div style={{ background: '#fef3c7', padding: '0.5rem 1rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '0.8rem' }}>
-          DEBUG: role={role}, isBuilder={String(isBuilder)}, isAdmin={String(isAdmin)}, tabs={tabs.length}
-        </div>
 
         <div className="project-header">
           <div>
