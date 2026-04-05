@@ -1,0 +1,408 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import { getConsumables, createConsumable, updateConsumable, deleteConsumable } from '../utils/storage';
+import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS, TEAM_MEMBERS } from '../utils/constants';
+
+function Consumables() {
+  const [items, setItems] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [filter, setFilter] = useState('all'); // all, pending, ordered, received
+  const [search, setSearch] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    quantity: 1,
+    unit: 'pcs',
+    status: 'pending',
+    store: '',
+    cost: '',
+    notes: '',
+    requestedBy: '',
+  });
+
+  useEffect(() => {
+    getConsumables().then(setItems);
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePresetSelect = (e) => {
+    const value = e.target.value;
+    if (value) {
+      setFormData(prev => ({ ...prev, name: value }));
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      quantity: 1,
+      unit: 'pcs',
+      status: 'pending',
+      store: '',
+      cost: '',
+      notes: '',
+      requestedBy: '',
+    });
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) return;
+
+    const newItem = {
+      id: uuidv4(),
+      ...formData,
+      quantity: parseInt(formData.quantity) || 1,
+      cost: formData.cost ? parseFloat(formData.cost) : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await createConsumable(newItem);
+    setItems(await getConsumables());
+    resetForm();
+    setShowAddModal(false);
+  };
+
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) return;
+
+    await updateConsumable(editingItem.id, {
+      ...formData,
+      quantity: parseInt(formData.quantity) || 1,
+      cost: formData.cost ? parseFloat(formData.cost) : null,
+    });
+    setItems(await getConsumables());
+    resetForm();
+    setEditingItem(null);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Remove this item?')) {
+      await deleteConsumable(id);
+      setItems(await getConsumables());
+    }
+  };
+
+  const handleStatusChange = async (id, status) => {
+    await updateConsumable(id, { status });
+    setItems(await getConsumables());
+  };
+
+  const startEdit = (item) => {
+    setFormData({
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit || 'pcs',
+      status: item.status,
+      store: item.store || '',
+      cost: item.cost || '',
+      notes: item.notes || '',
+      requestedBy: item.requestedBy || '',
+    });
+    setEditingItem(item);
+  };
+
+  const filteredItems = items
+    .filter(item => filter === 'all' || item.status === filter)
+    .filter(item =>
+      !search || item.name.toLowerCase().includes(search.toLowerCase()) ||
+      (item.store && item.store.toLowerCase().includes(search.toLowerCase())) ||
+      (item.requestedBy && item.requestedBy.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      const order = { pending: 0, ordered: 1, received: 2 };
+      return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+    });
+
+  const pendingCount = items.filter(i => i.status === 'pending').length;
+  const orderedCount = items.filter(i => i.status === 'ordered').length;
+  const totalCost = items
+    .filter(i => i.status !== 'received')
+    .reduce((sum, i) => sum + (i.cost ? i.cost * i.quantity : 0), 0);
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'pending': return { background: '#fef3c7', color: '#92400e' };
+      case 'ordered': return { background: '#dbeafe', color: '#1e40af' };
+      case 'received': return { background: '#d1fae5', color: '#065f46' };
+      default: return { background: 'var(--light)', color: 'var(--gray)' };
+    }
+  };
+
+  const renderModal = (isEdit) => (
+    <div className="modal-overlay" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+        <div className="modal-header">
+          <h3>{isEdit ? 'Edit Item' : 'Request Consumable'}</h3>
+          <button className="icon-btn" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>x</button>
+        </div>
+
+        <form onSubmit={isEdit ? handleEdit : handleAdd}>
+          {!isEdit && (
+            <div className="form-group">
+              <label>Quick Select</label>
+              <select onChange={handlePresetSelect} value="">
+                <option value="">Choose a common item...</option>
+                {CONSUMABLE_PRESETS.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label>Item Name *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="e.g., Plywood 4x8 sheets"
+              required
+              autoFocus={!!isEdit}
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                min="1"
+              />
+            </div>
+            <div className="form-group">
+              <label>Unit</label>
+              <select name="unit" value={formData.unit} onChange={handleChange}>
+                {CONSUMABLE_UNITS.map(u => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Est. Cost ($)</label>
+              <input
+                type="number"
+                name="cost"
+                value={formData.cost}
+                onChange={handleChange}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Suggested Store</label>
+              <select name="store" value={formData.store} onChange={handleChange}>
+                <option value="">Select or type below...</option>
+                {SUGGESTED_STORES.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              {!SUGGESTED_STORES.includes(formData.store) && formData.store && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--gray)', marginTop: '0.25rem' }}>
+                  Custom: {formData.store}
+                </div>
+              )}
+              <input
+                type="text"
+                name="store"
+                value={SUGGESTED_STORES.includes(formData.store) ? '' : formData.store}
+                onChange={handleChange}
+                placeholder="Or type a store name..."
+                style={{ marginTop: '0.4rem' }}
+              />
+            </div>
+            <div className="form-group">
+              <label>Requested By</label>
+              <select name="requestedBy" value={formData.requestedBy} onChange={handleChange}>
+                <option value="">Select...</option>
+                {TEAM_MEMBERS.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Status</label>
+            <select name="status" value={formData.status} onChange={handleChange}>
+              <option value="pending">Pending</option>
+              <option value="ordered">Ordered</option>
+              <option value="received">Received</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Notes</label>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="Brand preference, size, color, urgency..."
+              rows={2}
+            />
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-outline" onClick={() => { resetForm(); setShowAddModal(false); setEditingItem(null); }}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {isEdit ? 'Save Changes' : 'Add Request'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="app">
+      <header className="header">
+        <Link to="/"><h1>Museum Project Manager</h1></Link>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <Link to="/dashboard" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+            Dashboard
+          </Link>
+          <Link to="/inventory" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+            Inventory
+          </Link>
+          <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>
+            + Request Item
+          </button>
+        </div>
+      </header>
+
+      <div className="container">
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div className="stat-card" style={{ borderTop: '3px solid #f59e0b' }}>
+            <div className="stat-value" style={{ color: '#f59e0b' }}>{pendingCount}</div>
+            <div className="stat-label">Pending</div>
+          </div>
+          <div className="stat-card" style={{ borderTop: '3px solid #3b82f6' }}>
+            <div className="stat-value" style={{ color: '#3b82f6' }}>{orderedCount}</div>
+            <div className="stat-label">Ordered</div>
+          </div>
+          <div className="stat-card" style={{ borderTop: '3px solid var(--success)' }}>
+            <div className="stat-value" style={{ color: 'var(--success)' }}>{items.filter(i => i.status === 'received').length}</div>
+            <div className="stat-label">Received</div>
+          </div>
+          <div className="stat-card" style={{ borderTop: '3px solid #5b4a8a' }}>
+            <div className="stat-value" style={{ color: '#5b4a8a', fontSize: '1.25rem' }}>${totalCost.toFixed(2)}</div>
+            <div className="stat-label">Outstanding Cost</div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h2>Consumables</h2>
+          </div>
+
+          {/* Filters */}
+          <div className="inventory-filters" style={{ marginBottom: '1rem' }}>
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search items, stores, people..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="all">All ({items.length})</option>
+              <option value="pending">Pending ({pendingCount})</option>
+              <option value="ordered">Ordered ({orderedCount})</option>
+              <option value="received">Received ({items.filter(i => i.status === 'received').length})</option>
+            </select>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <div className="empty-state">
+              <h3>No items</h3>
+              <p>{items.length === 0 ? 'Click "+ Request Item" to add your first consumable.' : 'No items match your filter.'}</p>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Store</th>
+                    <th>Requested By</th>
+                    <th>Status</th>
+                    <th>Cost</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map(item => (
+                    <tr key={item.id}>
+                      <td>
+                        <strong>{item.name}</strong>
+                        {item.notes && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{item.notes}</div>
+                        )}
+                      </td>
+                      <td>{item.quantity} {item.unit}</td>
+                      <td>{item.store || '-'}</td>
+                      <td>{item.requestedBy || '-'}</td>
+                      <td>
+                        <select
+                          value={item.status}
+                          onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                          style={{
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '2px',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.03em',
+                            ...getStatusStyle(item.status)
+                          }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="ordered">Ordered</option>
+                          <option value="received">Received</option>
+                        </select>
+                      </td>
+                      <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.25rem' }}>
+                          <button className="icon-btn" onClick={() => startEdit(item)}>Edit</button>
+                          <button className="icon-btn" onClick={() => handleDelete(item.id)}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showAddModal && renderModal(false)}
+      {editingItem && renderModal(true)}
+    </div>
+  );
+}
+
+export default Consumables;

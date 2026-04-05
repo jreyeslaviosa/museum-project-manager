@@ -11,6 +11,70 @@ export const TEAM_MEMBERS = [
   'Tiger'
 ];
 
+export const CONSUMABLE_PRESETS = [
+  'Wood (plywood)',
+  'Wood (MDF)',
+  'Wood (lumber)',
+  'Screws',
+  'Nails',
+  'Bolts & Nuts',
+  'Paint (latex)',
+  'Paint (spray)',
+  'Primer',
+  'Glue (wood)',
+  'Glue (super)',
+  'Epoxy',
+  'Sandpaper',
+  'Tape (gaffer)',
+  'Tape (painters)',
+  'Tape (double-sided)',
+  'Zip ties',
+  'Velcro',
+  'Foam board',
+  'Drywall',
+  'Joint compound',
+  'Caulk',
+  'Wire',
+  'Heat shrink tubing',
+  'Solder',
+  'Cleaning supplies',
+  'Rags / cloths',
+  'Trash bags',
+  'Safety equipment',
+];
+
+export const SUGGESTED_STORES = [
+  'Home Depot',
+  'Lowes',
+  'Amazon',
+  'Benjamin Moore',
+  'McMaster-Carr',
+  'Blick Art Materials',
+  'Uline',
+  'Grainger',
+  'B&H Photo',
+  'Ace Hardware',
+];
+
+export const CONSUMABLE_UNITS = [
+  'pcs',
+  'sheets',
+  'boards',
+  'ft',
+  'm',
+  'gallons',
+  'quarts',
+  'liters',
+  'lbs',
+  'kg',
+  'rolls',
+  'boxes',
+  'bags',
+  'tubes',
+  'cans',
+  'packs',
+];
+
 export const INVENTORY_CATEGORIES = [
   { id: 'projectors', label: 'Projectors' },
   { id: 'lenses', label: 'Lenses' },

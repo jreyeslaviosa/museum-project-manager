@@ -25,6 +25,10 @@ function Home() {
             <h2>Inventory</h2>
             <p>Track equipment, materials, and asset locations</p>
           </Link>
+          <Link to="/consumables" className="home-card">
+            <h2>Consumables</h2>
+            <p>Request workshop supplies like wood, paint, screws, and more</p>
+          </Link>
         </div>
       </div>
     </div>

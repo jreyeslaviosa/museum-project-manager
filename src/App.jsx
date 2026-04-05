@@ -9,6 +9,7 @@ import ProjectDetail from './components/ProjectDetail'
 import NewProject from './components/NewProject'
 import Inventory from './components/Inventory'
 import InventoryDetail from './components/inventory/InventoryDetail'
+import Consumables from './components/Consumables'
 import './App.css'
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/inventory/:id" element={<InventoryDetail />} />
+          <Route path="/consumables" element={<Consumables />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
