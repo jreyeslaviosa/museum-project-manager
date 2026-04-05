@@ -126,14 +126,31 @@ function FullViewTab({ project }) {
       )}
 
       {/* Tech Rider */}
-      {project.techRider && (
-        <div style={sectionStyle}>
-          <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Tech Rider</div>
-          <div style={{ fontSize: '0.85rem' }}>
-            {project.techRider.name} ({(project.techRider.size / 1024).toFixed(1)} KB)
+      {(() => {
+        const techFiles = project.techRiderFiles || (project.techRider ? [project.techRider] : []);
+        if (techFiles.length === 0) return null;
+        const imageFiles = techFiles.filter(f => f.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(f.name));
+        const docFiles = techFiles.filter(f => !f.type?.startsWith('image/') && !/\.(jpg|jpeg|png|gif|svg|webp)$/i.test(f.name));
+        return (
+          <div style={sectionStyle}>
+            <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>Tech Rider ({techFiles.length} file{techFiles.length !== 1 ? 's' : ''})</div>
+            {docFiles.map(f => (
+              <div key={f.id || f.name} style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                {f.name} {f.size ? `(${(f.size / 1024).toFixed(1)} KB)` : ''}
+              </div>
+            ))}
+            {imageFiles.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {imageFiles.map(img => (
+                  <div key={img.id || img.name} style={{ borderRadius: '4px', overflow: 'hidden', aspectRatio: '4/3' }}>
+                    <img src={img.data} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Equipment */}
       {(artistItems.length > 0 || museumItems.length > 0) && (

@@ -1,73 +1,91 @@
 import { useState, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 function TechRiderTab({ project, onUpdate }) {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
+  // Support both old single-file format and new multi-file format
+  const files = project.techRiderFiles || (project.techRider ? [project.techRider] : []);
+
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      processFile(file);
-    }
+    const selectedFiles = Array.from(e.target.files);
+    processFiles(selectedFiles);
+    e.target.value = '';
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      processFile(file);
-    }
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    processFiles(droppedFiles);
   };
 
-  const processFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onUpdate({
-        techRider: {
+  const processFiles = (newFiles) => {
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newFile = {
+          id: uuidv4(),
           name: file.name,
           type: file.type,
           size: file.size,
           data: e.target.result,
           uploadedAt: new Date().toISOString()
-        }
-      });
-    };
-    reader.readAsDataURL(file);
+        };
+        const current = project.techRiderFiles || (project.techRider ? [project.techRider] : []);
+        onUpdate({
+          techRiderFiles: [...current, newFile],
+          techRider: null
+        });
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleRemove = () => {
-    if (window.confirm('Remove this tech rider document?')) {
-      onUpdate({ techRider: null });
+  const removeFile = (id) => {
+    if (window.confirm('Remove this file?')) {
+      const updated = files.filter(f => f.id !== id);
+      onUpdate({ techRiderFiles: updated, techRider: null });
     }
   };
 
-  const handleDownload = () => {
-    if (project.techRider) {
-      const link = document.createElement('a');
-      link.href = project.techRider.data;
-      link.download = project.techRider.name;
-      link.click();
-    }
+  const handleDownload = (file) => {
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    link.click();
   };
 
   const formatFileSize = (bytes) => {
+    if (!bytes) return '';
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const isImage = (file) => {
+    return file.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|svg|webp)$/i.test(file.name);
+  };
+
+  const isPDF = (file) => {
+    return file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+  };
+
+  const imageFiles = files.filter(isImage);
+  const docFiles = files.filter(f => !isImage(f));
+
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>Tech Rider</h2>
-      </div>
+    <div>
+      <div className="card">
+        <div className="card-header">
+          <h2>Tech Rider</h2>
+        </div>
 
-      <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
-        Upload the technical rider document containing all technical requirements for the installation.
-      </p>
+        <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
+          Upload technical rider documents and images — PDFs, photos, diagrams, or scans.
+        </p>
 
-      {!project.techRider ? (
         <div
           className={`file-upload ${dragOver ? 'dragover' : ''}`}
           onClick={() => fileInputRef.current?.click()}
@@ -80,66 +98,83 @@ function TechRiderTab({ project, onUpdate }) {
             ref={fileInputRef}
             type="file"
             onChange={handleFileSelect}
-            accept=".pdf,.doc,.docx,.txt,.rtf"
+            accept=".pdf,.doc,.docx,.txt,.rtf,.jpg,.jpeg,.png,.gif,.svg,.webp"
+            multiple
           />
-          <div style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--gray)' }}>Document</div>
           <p><strong>Click to upload</strong> or drag and drop</p>
-          <p>PDF, DOC, DOCX, TXT, RTF</p>
+          <p>PDF, DOC, JPG, PNG, and more</p>
         </div>
-      ) : (
-        <div>
-          <div className="uploaded-file">
-            <span>
-              <div>
-                <strong>{project.techRider.name}</strong>
-                <div style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
-                  {formatFileSize(project.techRider.size)} • Uploaded {new Date(project.techRider.uploadedAt).toLocaleDateString()}
+
+        {/* Document Files */}
+        {docFiles.length > 0 && (
+          <div className="uploaded-files">
+            {docFiles.map(file => (
+              <div key={file.id || file.name} className="uploaded-file">
+                <span>
+                  <div>
+                    <strong>{file.name}</strong>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+                      {formatFileSize(file.size)}
+                      {file.uploadedAt && ` · Uploaded ${new Date(file.uploadedAt).toLocaleDateString()}`}
+                    </div>
+                  </div>
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button className="btn btn-small btn-outline" onClick={() => handleDownload(file)}>
+                    Download
+                  </button>
+                  <button className="btn btn-small btn-danger" onClick={() => removeFile(file.id)}>
+                    Remove
+                  </button>
                 </div>
               </div>
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-small btn-outline" onClick={handleDownload}>
-                Download
-              </button>
-              <button className="btn btn-small btn-danger" onClick={handleRemove}>
-                Remove
-              </button>
-            </div>
+            ))}
           </div>
+        )}
 
-          {project.techRider.type === 'application/pdf' && (
-            <div style={{ marginTop: '1.5rem' }}>
-              <h4 style={{ marginBottom: '1rem' }}>Preview</h4>
-              <iframe
-                src={project.techRider.data}
-                style={{
-                  width: '100%',
-                  height: '600px',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px'
-                }}
-                title="Tech Rider Preview"
-              />
+        {/* PDF Preview */}
+        {docFiles.filter(isPDF).map(file => (
+          <div key={file.id || file.name} style={{ marginTop: '1rem' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--gray)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              {file.name}
             </div>
-          )}
-
-          <div style={{ marginTop: '1.5rem' }}>
-            <button
-              className="btn btn-outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Replace Document
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileSelect}
-              accept=".pdf,.doc,.docx,.txt,.rtf"
-              style={{ display: 'none' }}
+            <iframe
+              src={file.data}
+              style={{ width: '100%', height: '600px', border: '1px solid var(--border)', borderRadius: '4px' }}
+              title={file.name}
             />
           </div>
-        </div>
-      )}
+        ))}
+
+        {/* Image Files */}
+        {imageFiles.length > 0 && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--gray)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              Images ({imageFiles.length})
+            </div>
+            <div className="image-gallery">
+              {imageFiles.map(file => (
+                <div key={file.id || file.name} className="image-item">
+                  <img src={file.data} alt={file.name} />
+                  <button
+                    className="delete-btn"
+                    onClick={() => removeFile(file.id)}
+                    title="Remove image"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {files.length === 0 && (
+          <p style={{ color: 'var(--gray)', textAlign: 'center', marginTop: '1rem', fontSize: '0.85rem' }}>
+            No files uploaded yet
+          </p>
+        )}
+      </div>
     </div>
   );
 }
