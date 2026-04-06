@@ -26,6 +26,11 @@ function Purchasing() {
     setConsumables(await getConsumables());
   };
 
+  const handleTrackingUpdate = async (id, trackingLink) => {
+    await updateConsumable(id, { trackingLink: trackingLink.trim() || null });
+    setConsumables(await getConsumables());
+  };
+
   const handleCostUpdate = async (id, cost) => {
     await updateConsumable(id, { cost: cost ? parseFloat(cost) : null });
     setConsumables(await getConsumables());
@@ -265,6 +270,7 @@ function Purchasing() {
                       <th>Cost</th>
                       <th>Purchased</th>
                       <th>Expected Delivery</th>
+                      <th>Tracking</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -276,6 +282,17 @@ function Purchasing() {
                           <td>
                             <strong>{item.name}</strong>
                             {item.notes && <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{item.notes}</div>}
+                            {item.trackingLink && (
+                              <div style={{ fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                                {item.trackingLink.startsWith('http') ? (
+                                  <a href={item.trackingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--secondary)' }}>
+                                    Track order
+                                  </a>
+                                ) : (
+                                  <span style={{ color: 'var(--gray)' }}>Tracking: {item.trackingLink}</span>
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td>{item.quantity} {item.unit}</td>
                           <td>{item.store || '-'}</td>
@@ -290,6 +307,15 @@ function Purchasing() {
                               style={{ fontSize: '0.85rem', padding: '0.2rem', border: '1px solid var(--border)', borderRadius: '3px' }}
                             />
                             {isLate && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>OVERDUE</div>}
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              defaultValue={item.trackingLink || ''}
+                              onBlur={(e) => handleTrackingUpdate(item.id, e.target.value)}
+                              placeholder="URL or tracking #"
+                              style={{ fontSize: '0.8rem', padding: '0.2rem 0.4rem', border: '1px solid var(--border)', borderRadius: '3px', width: '140px' }}
+                            />
                           </td>
                           <td>
                             <button

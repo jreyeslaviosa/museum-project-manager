@@ -99,6 +99,7 @@ function Consumables() {
       requestedBy: item.requestedBy || '',
       purchaseDate: item.purchaseDate || '',
       deliveryDate: item.deliveryDate || '',
+      trackingLink: item.trackingLink || '',
     });
     setEditingItem(item);
   };
@@ -120,6 +121,7 @@ function Consumables() {
       requestedBy: editForm.requestedBy,
       purchaseDate: editForm.purchaseDate || null,
       deliveryDate: editForm.deliveryDate || null,
+      trackingLink: editForm.trackingLink.trim() || null,
     });
     setItems(await getConsumables());
     setEditingItem(null);
@@ -452,16 +454,22 @@ function Consumables() {
               </div>
 
               {(editForm.status === 'ordered' || editForm.status === 'received') && (
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Purchase Date</label>
-                    <input type="date" name="purchaseDate" value={editForm.purchaseDate} onChange={handleEditChange} />
+                <>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Purchase Date</label>
+                      <input type="date" name="purchaseDate" value={editForm.purchaseDate} onChange={handleEditChange} />
+                    </div>
+                    <div className="form-group">
+                      <label>Expected Delivery</label>
+                      <input type="date" name="deliveryDate" value={editForm.deliveryDate} onChange={handleEditChange} min={editForm.purchaseDate || undefined} />
+                    </div>
                   </div>
                   <div className="form-group">
-                    <label>Expected Delivery</label>
-                    <input type="date" name="deliveryDate" value={editForm.deliveryDate} onChange={handleEditChange} min={editForm.purchaseDate || undefined} />
+                    <label>Order Link / Tracking</label>
+                    <input type="text" name="trackingLink" value={editForm.trackingLink} onChange={handleEditChange} placeholder="Paste URL or tracking number..." />
                   </div>
-                </div>
+                </>
               )}
 
               <div className="form-group">
