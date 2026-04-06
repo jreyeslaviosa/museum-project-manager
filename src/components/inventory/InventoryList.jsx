@@ -188,6 +188,9 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
                 <th onClick={() => handleSort('currentValue')} style={{ cursor: 'pointer', textAlign: 'right' }}>
                   Value <SortIcon field="currentValue" />
                 </th>
+                <th onClick={() => handleSort('createdBy')} style={{ cursor: 'pointer' }}>
+                  Added By <SortIcon field="createdBy" />
+                </th>
                 <th style={{ width: '120px' }}>Actions</th>
               </tr>
             </thead>
@@ -223,6 +226,14 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
                   <td>{item.location || '-'}</td>
                   <td style={{ textAlign: 'right' }}>
                     ${(item.currentValue || item.purchaseCost || 0).toLocaleString()}
+                  </td>
+                  <td>
+                    {item.createdBy && (
+                      <div style={{ fontSize: '0.85rem' }}>{item.createdBy}</div>
+                    )}
+                    {item.updatedBy && item.updatedBy !== item.createdBy && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>Edited: {item.updatedBy}</div>
+                    )}
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.25rem' }}>

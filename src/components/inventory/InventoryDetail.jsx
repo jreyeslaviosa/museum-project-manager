@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getInventoryItem, updateInventoryItem, deleteInventoryItem, getProjects } from '../../utils/storage';
 import { INVENTORY_CATEGORIES, CONDITION_OPTIONS, INVENTORY_STATUS_OPTIONS } from '../../utils/constants';
+import { useUser } from '../../utils/UserContext';
 import InventoryItemModal from './InventoryItemModal';
 import CheckoutModal from './CheckoutModal';
 
 function InventoryDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { userProfile } = useUser();
   const [item, setItem] = useState(null);
   const [projects, setProjects] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -29,8 +31,9 @@ function InventoryDetail() {
   if (!item) return null;
 
   const handleSave = async (updatedItem) => {
-    await updateInventoryItem(id, updatedItem);
-    setItem({ ...item, ...updatedItem });
+    const withUser = { ...updatedItem, updatedBy: userProfile?.name || 'Unknown' };
+    await updateInventoryItem(id, withUser);
+    setItem({ ...item, ...withUser });
     setShowEditModal(false);
   };
 
@@ -423,9 +426,9 @@ function InventoryDetail() {
 
         {/* Metadata */}
         <div className="card" style={{ background: 'var(--light)' }}>
-          <div style={{ display: 'flex', gap: '2rem', fontSize: '0.85rem', color: 'var(--gray)' }}>
-            <span>Created: {formatDateTime(item.createdAt)}</span>
-            <span>Updated: {formatDateTime(item.updatedAt)}</span>
+          <div style={{ display: 'flex', gap: '2rem', fontSize: '0.85rem', color: 'var(--gray)', flexWrap: 'wrap' }}>
+            <span>Created: {formatDateTime(item.createdAt)}{item.createdBy ? ` by ${item.createdBy}` : ''}</span>
+            <span>Updated: {formatDateTime(item.updatedAt)}{item.updatedBy ? ` by ${item.updatedBy}` : ''}</span>
           </div>
         </div>
       </div>

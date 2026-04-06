@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getInventory, saveInventory, createInventoryItem, updateInventoryItem, deleteInventoryItem, getProjects } from '../utils/storage';
 import { INVENTORY_CATEGORIES } from '../utils/constants';
+import { useUser } from '../utils/UserContext';
 import InventoryStats from './inventory/InventoryStats';
 import InventoryList from './inventory/InventoryList';
 import InventoryItemModal from './inventory/InventoryItemModal';
@@ -9,6 +10,7 @@ import CheckoutModal from './inventory/CheckoutModal';
 import ImportModal from './inventory/ImportModal';
 
 function Inventory() {
+  const { userProfile } = useUser();
   const [inventory, setInventory] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -23,10 +25,11 @@ function Inventory() {
   }, []);
 
   const handleSaveItem = async (item) => {
+    const userName = userProfile?.name || 'Unknown';
     if (editingItem) {
-      await updateInventoryItem(item.id, item);
+      await updateInventoryItem(item.id, { ...item, updatedBy: userName });
     } else {
-      await createInventoryItem(item);
+      await createInventoryItem({ ...item, createdBy: userName, updatedBy: userName });
     }
     setInventory(await getInventory());
     setShowAddModal(false);
