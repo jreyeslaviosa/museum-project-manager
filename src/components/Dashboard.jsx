@@ -10,6 +10,7 @@ function Dashboard() {
   const [activeView, setActiveView] = useState('overview');
   const [projectFilter, setProjectFilter] = useState('active');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [expandedMembers, setExpandedMembers] = useState({});
 
   useEffect(() => {
     getProjects().then(setProjects);
@@ -90,7 +91,7 @@ function Dashboard() {
   // Get team workload
   const teamWorkload = {};
   TEAM_MEMBERS.forEach(member => {
-    teamWorkload[member] = { active: 0, completed: 0 };
+    teamWorkload[member] = { active: 0, completed: 0, tasks: [] };
   });
 
   projects.forEach(project => {
@@ -102,9 +103,24 @@ function Dashboard() {
             teamWorkload[person].completed++;
           } else {
             teamWorkload[person].active++;
+            teamWorkload[person].tasks.push({
+              ...task,
+              projectTitle: project.title,
+              projectId: project.id
+            });
           }
         }
       });
+    });
+  });
+
+  // Sort each member's tasks by due date
+  Object.values(teamWorkload).forEach(w => {
+    w.tasks.sort((a, b) => {
+      if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
     });
   });
 
@@ -634,40 +650,115 @@ function Dashboard() {
               <h2>Team Workload</h2>
             </div>
             <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
-              Active tasks assigned to each team member across all projects
+              Click on a team member to see their active tasks across all projects.
             </p>
 
-            <div style={{ display: 'grid', gap: '1rem' }}>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
               {TEAM_MEMBERS.map(member => {
                 const workload = teamWorkload[member];
                 const total = workload.active + workload.completed;
                 const percentage = total > 0 ? Math.round((workload.completed / total) * 100) : 0;
+                const isExpanded = expandedMembers[member];
+
+                // Group tasks by project
+                const tasksByProject = {};
+                workload.tasks.forEach(t => {
+                  if (!tasksByProject[t.projectId]) {
+                    tasksByProject[t.projectId] = { title: t.projectTitle, id: t.projectId, tasks: [] };
+                  }
+                  tasksByProject[t.projectId].tasks.push(t);
+                });
 
                 return (
                   <div
                     key={member}
                     style={{
-                      padding: '1rem',
                       background: 'var(--light)',
-                      borderRadius: '8px'
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      borderLeft: workload.active > 5 ? '4px solid var(--accent)' : workload.active > 0 ? '4px solid var(--secondary)' : '4px solid var(--border)'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {member}
-                      </h4>
-                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.9rem' }}>
-                        <span style={{ color: 'var(--secondary)', fontWeight: 500 }}>
-                          {workload.active} active
-                        </span>
-                        <span style={{ color: 'var(--success)' }}>
-                          {workload.completed} done
-                        </span>
+                    <div
+                      onClick={() => setExpandedMembers(prev => ({ ...prev, [member]: !prev[member] }))}
+                      style={{
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        userSelect: 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                          <span style={{ color: 'var(--gray)', fontSize: '0.7rem', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>&#9654;</span>
+                          {member}
+                          {workload.active === 0 && (
+                            <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--success)' }}>Available</span>
+                          )}
+                          {workload.active > 5 && (
+                            <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--accent)' }}>Heavy load</span>
+                          )}
+                        </h4>
+                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
+                          <span style={{ color: 'var(--secondary)', fontWeight: 500 }}>
+                            {workload.active} active
+                          </span>
+                          <span style={{ color: 'var(--success)' }}>
+                            {workload.completed} done
+                          </span>
+                          <span style={{ color: 'var(--gray)' }}>
+                            {Object.keys(tasksByProject).length} project{Object.keys(tasksByProject).length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="progress-bar" style={{ height: '6px' }}>
+                        <div className="progress-fill" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
-                    <div className="progress-bar" style={{ height: '8px' }}>
-                      <div className="progress-fill" style={{ width: `${percentage}%` }} />
-                    </div>
+
+                    {isExpanded && workload.tasks.length > 0 && (
+                      <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid var(--border)' }}>
+                        {Object.values(tasksByProject).map(group => (
+                          <div key={group.id} style={{ marginTop: '0.75rem' }}>
+                            <Link
+                              to={`/project/${group.id}`}
+                              style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--secondary)', textDecoration: 'none' }}
+                            >
+                              {group.title}
+                            </Link>
+                            {group.tasks.map(task => {
+                              const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                              return (
+                                <div key={task.id} style={{
+                                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                  padding: '0.35rem 0', borderBottom: '1px solid var(--border)',
+                                  fontSize: '0.85rem'
+                                }}>
+                                  <span>
+                                    {task.isMilestone && <span style={{ color: '#f59e0b', marginRight: '0.3rem', fontWeight: 600 }}>M</span>}
+                                    {task.priority === 'high' && <span style={{ color: '#ef4444', marginRight: '0.3rem', fontWeight: 600 }}>!</span>}
+                                    {task.title}
+                                  </span>
+                                  {task.dueDate && (
+                                    <span style={{
+                                      fontSize: '0.75rem', fontWeight: 500, whiteSpace: 'nowrap', marginLeft: '0.5rem',
+                                      color: isOverdue ? 'var(--accent)' : 'var(--gray)'
+                                    }}>
+                                      {isOverdue ? 'Overdue: ' : ''}{formatDate(task.dueDate)}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {isExpanded && workload.tasks.length === 0 && (
+                      <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid var(--border)' }}>
+                        <p style={{ color: 'var(--gray)', fontSize: '0.85rem', marginTop: '0.75rem' }}>No active tasks assigned.</p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
