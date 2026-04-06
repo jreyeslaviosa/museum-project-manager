@@ -111,3 +111,143 @@ export const USER_ROLES = {
 };
 
 export const DEFAULT_ROLE = 'builder';
+
+export const PROJECT_TEMPLATES = [
+  {
+    id: 'blank',
+    label: 'Blank Project',
+    description: 'Start from scratch with no pre-filled data',
+    data: {}
+  },
+  {
+    id: 'video-installation',
+    label: 'Video Installation',
+    description: 'Projector or screen-based video artwork',
+    data: {
+      museumProviding: [
+        { id: 'tpl-1', name: 'Projector', quantity: 1, notes: '' },
+        { id: 'tpl-2', name: 'Media Player', quantity: 1, notes: '' },
+        { id: 'tpl-3', name: 'HDMI Cable', quantity: 2, notes: '' },
+        { id: 'tpl-4', name: 'Power Strip', quantity: 1, notes: '' },
+      ],
+      tasks: [
+        { id: 'tpl-t1', title: 'Receive and review tech rider', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t2', title: 'Confirm projector specs and lens', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t3', title: 'Build projection surface / wall', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t4', title: 'Run cables and power', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t5', title: 'Load and test media content', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t6', title: 'Calibrate projection alignment', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t7', title: 'Final walkthrough with artist', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+      ],
+      bomList: [
+        { id: 'tpl-b1', name: 'Paint (gallery white)', quantity: 2, unit: 'gallons', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b2', name: 'Blackout fabric', quantity: 1, unit: 'rolls', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+      ]
+    }
+  },
+  {
+    id: 'interactive-digital',
+    label: 'Interactive / Digital',
+    description: 'Sensor-based or computer-driven interactive piece',
+    data: {
+      museumProviding: [
+        { id: 'tpl-1', name: 'Computer', quantity: 1, notes: '' },
+        { id: 'tpl-2', name: 'Display / Projector', quantity: 1, notes: '' },
+        { id: 'tpl-3', name: 'Sensor / Camera', quantity: 1, notes: '' },
+        { id: 'tpl-4', name: 'Network Switch', quantity: 1, notes: '' },
+        { id: 'tpl-5', name: 'Power Strip', quantity: 2, notes: '' },
+      ],
+      tasks: [
+        { id: 'tpl-t1', title: 'Receive and review tech rider', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t2', title: 'Set up computer and install software', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t3', title: 'Install and calibrate sensors', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t4', title: 'Build enclosure / mount hardware', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t5', title: 'Run cables and network', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t6', title: 'Test interaction and edge cases', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t7', title: 'Set up auto-start on boot', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t8', title: 'Final walkthrough with artist', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+      ],
+      bomList: [
+        { id: 'tpl-b1', name: 'Paint (gallery white)', quantity: 2, unit: 'gallons', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b2', name: 'Cable management supplies', quantity: 1, unit: 'packs', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+      ]
+    }
+  },
+  {
+    id: 'sculpture-physical',
+    label: 'Sculpture / Physical',
+    description: 'Physical artwork requiring pedestal, rigging, or custom build',
+    data: {
+      museumProviding: [
+        { id: 'tpl-1', name: 'Pedestal / Platform', quantity: 1, notes: '' },
+        { id: 'tpl-2', name: 'Lighting (spot)', quantity: 2, notes: '' },
+      ],
+      tasks: [
+        { id: 'tpl-t1', title: 'Receive artist specs and drawings', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t2', title: 'Build pedestal / platform', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t3', title: 'Prep gallery walls and floor', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t4', title: 'Receive and uncrate artwork', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t5', title: 'Position and secure artwork', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t6', title: 'Aim and focus lighting', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t7', title: 'Final walkthrough with artist', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+      ],
+      bomList: [
+        { id: 'tpl-b1', name: 'Paint (gallery white)', quantity: 2, unit: 'gallons', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b2', name: 'Plywood (for pedestal)', quantity: 2, unit: 'sheets', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b3', name: 'Screws', quantity: 1, unit: 'boxes', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+      ]
+    }
+  },
+  {
+    id: 'sound-installation',
+    label: 'Sound Installation',
+    description: 'Audio-based artwork with speakers and media playback',
+    data: {
+      museumProviding: [
+        { id: 'tpl-1', name: 'Speakers', quantity: 2, notes: '' },
+        { id: 'tpl-2', name: 'Amplifier', quantity: 1, notes: '' },
+        { id: 'tpl-3', name: 'Media Player', quantity: 1, notes: '' },
+        { id: 'tpl-4', name: 'Audio Cables', quantity: 4, notes: '' },
+        { id: 'tpl-5', name: 'Power Strip', quantity: 1, notes: '' },
+      ],
+      tasks: [
+        { id: 'tpl-t1', title: 'Receive and review tech rider', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t2', title: 'Plan speaker placement and acoustics', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t3', title: 'Mount / position speakers', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t4', title: 'Run audio cables and power', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t5', title: 'Load audio content and configure playback', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t6', title: 'Sound check and level adjustment', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t7', title: 'Final walkthrough with artist', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+      ],
+      bomList: [
+        { id: 'tpl-b1', name: 'Acoustic treatment panels', quantity: 4, unit: 'pcs', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+      ]
+    }
+  },
+  {
+    id: 'painting-2d',
+    label: 'Painting / 2D Exhibition',
+    description: 'Framed or unframed 2D works on walls',
+    data: {
+      museumProviding: [
+        { id: 'tpl-1', name: 'Track Lighting', quantity: 1, notes: 'Per wall section' },
+        { id: 'tpl-2', name: 'Hanging Hardware', quantity: 1, notes: '' },
+      ],
+      tasks: [
+        { id: 'tpl-t1', title: 'Receive floorplan and hanging layout', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t2', title: 'Prep and paint gallery walls', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t3', title: 'Install hanging hardware', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t4', title: 'Receive and uncrate artwork', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t5', title: 'Hang and level artworks', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t6', title: 'Aim and focus lighting', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t7', title: 'Install labels and wall text', completed: false, isMilestone: false, assignees: [], dueDate: '', priority: 'normal' },
+        { id: 'tpl-t8', title: 'Final walkthrough with curator', completed: false, isMilestone: true, assignees: [], dueDate: '', priority: 'normal' },
+      ],
+      bomList: [
+        { id: 'tpl-b1', name: 'Paint (gallery white)', quantity: 3, unit: 'gallons', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b2', name: 'Spackle / joint compound', quantity: 1, unit: 'tubes', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+        { id: 'tpl-b3', name: 'Sandpaper', quantity: 1, unit: 'packs', status: 'to-buy', cost: 0, supplier: '', requestedBy: '', notes: '' },
+      ]
+    }
+  }
+];

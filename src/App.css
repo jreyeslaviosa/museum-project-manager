@@ -1302,3 +1302,36 @@ tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Print styles */
+@media print {
+  .header, .tabs, .back-link, .project-header, .no-print {
+    display: none !important;
+  }
+
+  .app, .container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .full-view-print {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 1rem !important;
+  }
+
+  .full-view-print img {
+    max-height: 300px !important;
+    break-inside: avoid;
+  }
+
+  .table-container {
+    overflow: visible !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12px !important;
+  }
+}

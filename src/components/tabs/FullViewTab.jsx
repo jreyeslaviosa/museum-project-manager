@@ -48,8 +48,19 @@ function FullViewTab({ project }) {
     marginBottom: '0.25rem'
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="card">
+    <div className="card full-view-print">
+      {/* Print Button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }} className="no-print">
+        <button className="btn btn-outline btn-small" onClick={handlePrint}>
+          Print / Save as PDF
+        </button>
+      </div>
+
       {/* Header */}
       <div style={sectionStyle}>
         <h2 style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>{project.title || 'Untitled Project'}</h2>
