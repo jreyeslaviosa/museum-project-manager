@@ -14,7 +14,15 @@ function Purchasing() {
   }, []);
 
   const handleStatusChange = async (id, status) => {
-    await updateConsumable(id, { status });
+    const updates = { status };
+    if (status === 'ordered') updates.purchaseDate = new Date().toISOString().split('T')[0];
+    if (status === 'received') updates.receivedDate = new Date().toISOString().split('T')[0];
+    await updateConsumable(id, updates);
+    setConsumables(await getConsumables());
+  };
+
+  const handleDeliveryDateUpdate = async (id, deliveryDate) => {
+    await updateConsumable(id, { deliveryDate: deliveryDate || null });
     setConsumables(await getConsumables());
   };
 
@@ -255,32 +263,46 @@ function Purchasing() {
                       <th>Qty</th>
                       <th>Store</th>
                       <th>Cost</th>
-                      <th>Ordered</th>
+                      <th>Purchased</th>
+                      <th>Expected Delivery</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orderedConsumables.map(item => (
-                      <tr key={item.id}>
-                        <td>
-                          <strong>{item.name}</strong>
-                          {item.notes && <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{item.notes}</div>}
-                        </td>
-                        <td>{item.quantity} {item.unit}</td>
-                        <td>{item.store || '-'}</td>
-                        <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
-                        <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.updatedAt)}</td>
-                        <td>
-                          <button
-                            className="btn btn-primary btn-small"
-                            onClick={() => handleStatusChange(item.id, 'received')}
-                            style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'var(--success)' }}
-                          >
-                            Mark Received
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {orderedConsumables.map(item => {
+                      const isLate = item.deliveryDate && new Date(item.deliveryDate) < new Date();
+                      return (
+                        <tr key={item.id} style={isLate ? { background: '#fef2f2' } : {}}>
+                          <td>
+                            <strong>{item.name}</strong>
+                            {item.notes && <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{item.notes}</div>}
+                          </td>
+                          <td>{item.quantity} {item.unit}</td>
+                          <td>{item.store || '-'}</td>
+                          <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
+                          <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.purchaseDate)}</td>
+                          <td>
+                            <input
+                              type="date"
+                              defaultValue={item.deliveryDate || ''}
+                              onBlur={(e) => handleDeliveryDateUpdate(item.id, e.target.value)}
+                              min={item.purchaseDate || undefined}
+                              style={{ fontSize: '0.85rem', padding: '0.2rem', border: '1px solid var(--border)', borderRadius: '3px' }}
+                            />
+                            {isLate && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>OVERDUE</div>}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-primary btn-small"
+                              onClick={() => handleStatusChange(item.id, 'received')}
+                              style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'var(--success)' }}
+                            >
+                              Mark Received
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -369,6 +391,7 @@ function Purchasing() {
                       <th>Qty</th>
                       <th>Store</th>
                       <th>Cost</th>
+                      <th>Purchased</th>
                       <th>Received</th>
                     </tr>
                   </thead>
@@ -382,7 +405,8 @@ function Purchasing() {
                         <td>{item.quantity} {item.unit}</td>
                         <td>{item.store || '-'}</td>
                         <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
-                        <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.updatedAt)}</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.purchaseDate)}</td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.receivedDate)}</td>
                       </tr>
                     ))}
                   </tbody>

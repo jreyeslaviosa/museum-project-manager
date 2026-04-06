@@ -74,7 +74,14 @@ function Consumables() {
   };
 
   const handleStatusChange = async (id, status) => {
-    await updateConsumable(id, { status });
+    const updates = { status };
+    if (status === 'ordered') {
+      updates.purchaseDate = new Date().toISOString().split('T')[0];
+    }
+    if (status === 'received') {
+      updates.receivedDate = new Date().toISOString().split('T')[0];
+    }
+    await updateConsumable(id, updates);
     setItems(await getConsumables());
   };
 
@@ -90,6 +97,8 @@ function Consumables() {
       cost: item.cost || '',
       notes: item.notes || '',
       requestedBy: item.requestedBy || '',
+      purchaseDate: item.purchaseDate || '',
+      deliveryDate: item.deliveryDate || '',
     });
     setEditingItem(item);
   };
@@ -109,6 +118,8 @@ function Consumables() {
       cost: editForm.cost ? parseFloat(editForm.cost) : null,
       notes: editForm.notes.trim(),
       requestedBy: editForm.requestedBy,
+      purchaseDate: editForm.purchaseDate || null,
+      deliveryDate: editForm.deliveryDate || null,
     });
     setItems(await getConsumables());
     setEditingItem(null);
@@ -439,6 +450,19 @@ function Consumables() {
                   <option value="received">Received</option>
                 </select>
               </div>
+
+              {(editForm.status === 'ordered' || editForm.status === 'received') && (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Purchase Date</label>
+                    <input type="date" name="purchaseDate" value={editForm.purchaseDate} onChange={handleEditChange} />
+                  </div>
+                  <div className="form-group">
+                    <label>Expected Delivery</label>
+                    <input type="date" name="deliveryDate" value={editForm.deliveryDate} onChange={handleEditChange} min={editForm.purchaseDate || undefined} />
+                  </div>
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Notes</label>
