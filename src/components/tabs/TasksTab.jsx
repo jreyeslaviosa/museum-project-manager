@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { TEAM_MEMBERS } from '../../utils/constants';
 
-function TasksTab({ project, onUpdate }) {
+function TasksTab({ project, onUpdate, readOnly, currentUserName }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -327,6 +327,7 @@ function TasksTab({ project, onUpdate }) {
 
   const renderTaskItem = (task) => {
     const assignees = getAssignees(task);
+    const canToggle = !readOnly || (currentUserName && assignees.includes(currentUserName));
     return (
       <div
         key={task.id}
@@ -340,7 +341,8 @@ function TasksTab({ project, onUpdate }) {
           type="checkbox"
           className="task-checkbox"
           checked={task.completed}
-          onChange={() => toggleComplete(task.id)}
+          onChange={() => canToggle && toggleComplete(task.id)}
+          style={canToggle ? {} : { opacity: 0.4, cursor: 'default' }}
         />
         <div className="task-content">
           <h4 style={{
@@ -404,14 +406,16 @@ function TasksTab({ project, onUpdate }) {
             )}
           </div>
         </div>
-        <div className="task-actions">
-          <button className="icon-btn" onClick={() => startEdit(task)} title="Edit">
-            Edit
-          </button>
-          <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete">
-            Delete
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="task-actions">
+            <button className="icon-btn" onClick={() => startEdit(task)} title="Edit">
+              Edit
+            </button>
+            <button className="icon-btn" onClick={() => handleDelete(task.id)} title="Delete">
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -468,9 +472,11 @@ function TasksTab({ project, onUpdate }) {
           <div className="card">
             <div className="card-header">
               <h2>Tasks - Who Is Doing What</h2>
-              <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>
-                + Add Task
-              </button>
+              {!readOnly && (
+                <button className="btn btn-primary btn-small" onClick={() => setShowAddModal(true)}>
+                  + Add Task
+                </button>
+              )}
             </div>
 
             {/* Progress */}
@@ -630,12 +636,14 @@ function TasksTab({ project, onUpdate }) {
         <div className="card">
           <div className="card-header">
             <h2>Project Milestones</h2>
-            <button className="btn btn-primary btn-small" onClick={() => {
-              setFormData(prev => ({ ...prev, isMilestone: true }));
-              setShowAddModal(true);
-            }}>
-              + Add Milestone
-            </button>
+            {!readOnly && (
+              <button className="btn btn-primary btn-small" onClick={() => {
+                setFormData(prev => ({ ...prev, isMilestone: true }));
+                setShowAddModal(true);
+              }}>
+                + Add Milestone
+              </button>
+            )}
           </div>
 
           <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
@@ -714,15 +722,19 @@ function TasksTab({ project, onUpdate }) {
                             {milestone.title}
                           </h4>
                           <div style={{ display: 'flex', gap: '0.25rem' }}>
-                            <button className="icon-btn" onClick={() => toggleComplete(milestone.id)}>
-                              {milestone.completed ? 'Undo' : 'Done'}
-                            </button>
-                            <button className="icon-btn" onClick={() => startEdit(milestone)}>
-                              Edit
-                            </button>
-                            <button className="icon-btn" onClick={() => handleDelete(milestone.id)}>
-                              Delete
-                            </button>
+                            {!readOnly && (
+                              <>
+                                <button className="icon-btn" onClick={() => toggleComplete(milestone.id)}>
+                                  {milestone.completed ? 'Undo' : 'Done'}
+                                </button>
+                                <button className="icon-btn" onClick={() => startEdit(milestone)}>
+                                  Edit
+                                </button>
+                                <button className="icon-btn" onClick={() => handleDelete(milestone.id)}>
+                                  Delete
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
 

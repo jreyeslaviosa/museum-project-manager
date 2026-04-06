@@ -85,6 +85,28 @@ function Consumables() {
     setItems(await getConsumables());
   };
 
+  const handleReorder = async (item) => {
+    const newItem = {
+      id: uuidv4(),
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit || 'pcs',
+      status: 'pending',
+      store: item.store || '',
+      cost: null,
+      notes: item.notes || '',
+      requestedBy: item.requestedBy || '',
+      trackingLink: null,
+      purchaseDate: null,
+      deliveryDate: null,
+      receivedDate: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await createConsumable(newItem);
+    setItems(await getConsumables());
+  };
+
   const startEdit = (item) => {
     const storeIsPreset = SUGGESTED_STORES.includes(item.store);
     setEditForm({
@@ -371,6 +393,9 @@ function Consumables() {
                       {isAdmin && (
                         <td>
                           <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            {item.status === 'received' && (
+                              <button className="icon-btn" onClick={() => handleReorder(item)} title="Request again">Reorder</button>
+                            )}
                             <button className="icon-btn" onClick={() => startEdit(item)}>Edit</button>
                             <button className="icon-btn" onClick={() => handleDelete(item.id)}>Delete</button>
                           </div>

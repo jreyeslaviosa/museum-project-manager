@@ -5,7 +5,7 @@ import { TEAM_MEMBERS } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 function Dashboard() {
-  const { isAdmin } = useUser();
+  const { isAdmin, isBuilder, userProfile } = useUser();
   const [projects, setProjects] = useState([]);
   const [activeView, setActiveView] = useState('overview');
 
@@ -312,6 +312,71 @@ function Dashboard() {
                 )}
               </div>
             )}
+
+            {/* My Tasks - for builders */}
+            {isBuilder && userProfile?.name && (() => {
+              const myTasks = projects.flatMap(project =>
+                (project.tasks || [])
+                  .filter(t => !t.completed && (
+                    (t.assignees && t.assignees.includes(userProfile.name)) ||
+                    t.assignee === userProfile.name
+                  ))
+                  .map(t => ({ ...t, projectTitle: project.title, projectId: project.id }))
+              ).sort((a, b) => {
+                if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
+                if (a.dueDate) return -1;
+                if (b.dueDate) return 1;
+                return 0;
+              });
+
+              return (
+                <div className="card" style={{ marginBottom: '2rem' }}>
+                  <div className="card-header">
+                    <h2>My Tasks ({myTasks.length})</h2>
+                  </div>
+                  {myTasks.length === 0 ? (
+                    <p style={{ color: 'var(--gray)' }}>No tasks assigned to you right now.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gap: '0.5rem' }}>
+                      {myTasks.map(task => {
+                        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                        return (
+                          <Link
+                            key={task.id}
+                            to={`/project/${task.projectId}`}
+                            style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                              padding: '0.75rem 1rem', borderRadius: '6px', textDecoration: 'none', color: 'inherit',
+                              background: isOverdue ? '#fef2f2' : 'var(--light)',
+                              borderLeft: task.priority === 'high' ? '4px solid #ef4444' : task.isMilestone ? '4px solid #f59e0b' : '4px solid var(--secondary)'
+                            }}
+                          >
+                            <div>
+                              <div style={{ fontWeight: 500 }}>
+                                {task.isMilestone && <span style={{ color: '#f59e0b', marginRight: '0.3rem' }}>M</span>}
+                                {task.title}
+                              </div>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+                                {task.projectTitle}
+                                {task.priority === 'high' && <span style={{ color: '#ef4444', marginLeft: '0.5rem' }}>HIGH</span>}
+                              </div>
+                            </div>
+                            {task.dueDate && (
+                              <span style={{
+                                fontSize: '0.8rem', fontWeight: 500, whiteSpace: 'nowrap',
+                                color: isOverdue ? 'var(--accent)' : 'var(--gray)'
+                              }}>
+                                {isOverdue ? 'Overdue: ' : ''}{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Projects Grid */}
             <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '1rem' }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getConsumables, updateConsumable, getProjects } from '../utils/storage';
+import { v4 as uuidv4 } from 'uuid';
+import { getConsumables, createConsumable, updateConsumable, getProjects } from '../utils/storage';
 import { SUGGESTED_STORES } from '../utils/constants';
 
 function Purchasing() {
@@ -28,6 +29,28 @@ function Purchasing() {
 
   const handleTrackingUpdate = async (id, trackingLink) => {
     await updateConsumable(id, { trackingLink: trackingLink.trim() || null });
+    setConsumables(await getConsumables());
+  };
+
+  const handleReorder = async (item) => {
+    const newItem = {
+      id: uuidv4(),
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit || 'pcs',
+      status: 'pending',
+      store: item.store || '',
+      cost: null,
+      notes: item.notes || '',
+      requestedBy: item.requestedBy || '',
+      trackingLink: null,
+      purchaseDate: null,
+      deliveryDate: null,
+      receivedDate: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await createConsumable(newItem);
     setConsumables(await getConsumables());
   };
 
@@ -419,6 +442,7 @@ function Purchasing() {
                       <th>Cost</th>
                       <th>Purchased</th>
                       <th>Received</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -433,6 +457,15 @@ function Purchasing() {
                         <td>{item.cost ? `$${(item.cost * item.quantity).toFixed(2)}` : '-'}</td>
                         <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.purchaseDate)}</td>
                         <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>{formatDate(item.receivedDate)}</td>
+                        <td>
+                          <button
+                            className="btn btn-outline btn-small"
+                            onClick={() => handleReorder(item)}
+                            style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                          >
+                            Reorder
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

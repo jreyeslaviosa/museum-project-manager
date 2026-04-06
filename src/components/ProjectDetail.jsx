@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProject, updateProject } from '../utils/storage';
 import { useUser } from '../utils/UserContext';
+import { TEAM_MEMBERS } from '../utils/constants';
 
 // Tab Components
 import OverviewTab from './tabs/OverviewTab';
@@ -26,13 +27,14 @@ const ADMIN_TABS = [
 
 const BUILDER_TABS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'tasks', label: 'My Tasks' },
   { id: 'full-view', label: 'Full View' }
 ];
 
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, isBuilder } = useUser();
+  const { isAdmin, isBuilder, userProfile } = useUser();
   const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -79,7 +81,7 @@ function ProjectDetail() {
       case 'bom':
         return <BOMTab project={project} onUpdate={handleUpdate} />;
       case 'tasks':
-        return <TasksTab project={project} onUpdate={handleUpdate} />;
+        return <TasksTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} currentUserName={userProfile?.name} />;
       case 'maintenance':
         return <MaintenanceTab project={project} onUpdate={handleUpdate} />;
       case 'full-view':
