@@ -327,7 +327,7 @@ function TasksTab({ project, onUpdate, readOnly, currentUserName }) {
 
   const renderTaskItem = (task) => {
     const assignees = getAssignees(task);
-    const canToggle = !readOnly || (currentUserName && assignees.includes(currentUserName));
+    const canToggle = !readOnly || (currentUserName && assignees.some(a => a.toLowerCase() === currentUserName.toLowerCase()));
     return (
       <div
         key={task.id}

@@ -318,8 +318,8 @@ function Dashboard() {
               const myTasks = projects.flatMap(project =>
                 (project.tasks || [])
                   .filter(t => !t.completed && (
-                    (t.assignees && t.assignees.includes(userProfile.name)) ||
-                    t.assignee === userProfile.name
+                    (t.assignees && t.assignees.some(a => a.toLowerCase() === userProfile.name.toLowerCase())) ||
+                    t.assignee?.toLowerCase() === userProfile.name.toLowerCase()
                   ))
                   .map(t => ({ ...t, projectTitle: project.title, projectId: project.id }))
               ).sort((a, b) => {
