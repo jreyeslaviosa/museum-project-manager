@@ -12,6 +12,8 @@ import InstallationTab from './tabs/InstallationTab';
 import BOMTab from './tabs/BOMTab';
 import TasksTab from './tabs/TasksTab';
 import MaintenanceTab from './tabs/MaintenanceTab';
+import FilesTab from './tabs/FilesTab';
+import ActivityTab from './tabs/ActivityTab';
 import FullViewTab from './tabs/FullViewTab';
 
 const ADMIN_TABS = [
@@ -22,12 +24,16 @@ const ADMIN_TABS = [
   { id: 'bom', label: 'BOM & Budget' },
   { id: 'tasks', label: 'Tasks' },
   { id: 'maintenance', label: 'Maintenance' },
+  { id: 'files', label: 'Files' },
+  { id: 'activity', label: 'Activity' },
   { id: 'full-view', label: 'Full View' }
 ];
 
 const BUILDER_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'tasks', label: 'My Tasks' },
+  { id: 'files', label: 'Files' },
+  { id: 'activity', label: 'Activity' },
   { id: 'full-view', label: 'Full View' }
 ];
 
@@ -54,12 +60,87 @@ function ProjectDetail() {
     });
   }, [id, navigate]);
 
+  const logActivity = (existingLog, entries) => {
+    const log = existingLog || [];
+    const newEntries = entries.map(e => ({
+      ...e,
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      timestamp: new Date().toISOString(),
+      user: userProfile?.name || 'Unknown'
+    }));
+    return [...log, ...newEntries];
+  };
+
+  const detectChanges = (updates) => {
+    const entries = [];
+
+    if (updates.status && updates.status !== project.status) {
+      const labels = { planning: 'Planning', 'in-progress': 'In Progress', installed: 'Installed', complete: 'Complete' };
+      entries.push({ type: 'status', message: `Status changed to ${labels[updates.status] || updates.status}` });
+    }
+
+    if (updates.tasks) {
+      const oldTasks = project.tasks || [];
+      const newTasks = updates.tasks;
+      if (newTasks.length > oldTasks.length) {
+        const added = newTasks.filter(nt => !oldTasks.find(ot => ot.id === nt.id));
+        added.forEach(t => entries.push({ type: 'task', message: `Task added: ${t.title}` }));
+      }
+      newTasks.forEach(nt => {
+        const ot = oldTasks.find(o => o.id === nt.id);
+        if (ot && !ot.completed && nt.completed) {
+          entries.push({ type: 'task', message: `Task completed: ${nt.title}` });
+        }
+      });
+    }
+
+    if (updates.maintenanceLog) {
+      const oldLog = project.maintenanceLog || [];
+      const newLog = updates.maintenanceLog;
+      if (newLog.length > oldLog.length) {
+        const added = newLog.filter(n => !oldLog.find(o => o.id === n.id));
+        added.forEach(m => entries.push({ type: 'maintenance', message: `Maintenance reported: ${m.title || m.issue}` }));
+      }
+      newLog.forEach(n => {
+        const o = oldLog.find(x => x.id === n.id);
+        if (o && !o.resolved && n.resolved) {
+          entries.push({ type: 'maintenance', message: `Maintenance resolved: ${n.title || n.issue}` });
+        }
+      });
+    }
+
+    if (updates.bomList) {
+      const oldBom = project.bomList || [];
+      const newBom = updates.bomList;
+      if (newBom.length > oldBom.length) {
+        const added = newBom.filter(n => !oldBom.find(o => o.id === n.id));
+        added.forEach(b => entries.push({ type: 'bom', message: `BOM item added: ${b.name}` }));
+      }
+    }
+
+    if (updates.files) {
+      const oldFiles = project.files || [];
+      const newFiles = updates.files;
+      if (newFiles.length > oldFiles.length) {
+        const added = newFiles.filter(n => !oldFiles.find(o => o.id === n.id));
+        added.forEach(f => entries.push({ type: 'file', message: `File linked: ${f.label}` }));
+      }
+      if (newFiles.length < oldFiles.length) {
+        entries.push({ type: 'file', message: 'File link removed' });
+      }
+    }
+
+    return entries;
+  };
+
   const handleUpdate = async (updates) => {
     setSaving(true);
-    const updated = await updateProject(id, {
-      ...updates,
-      updatedAt: new Date().toISOString()
-    });
+    const changes = detectChanges(updates);
+    const finalUpdates = { ...updates, updatedAt: new Date().toISOString() };
+    if (changes.length > 0) {
+      finalUpdates.activityLog = logActivity(project.activityLog, changes);
+    }
+    const updated = await updateProject(id, finalUpdates);
     setProject(updated);
     setTimeout(() => setSaving(false), 500);
   };
@@ -84,6 +165,10 @@ function ProjectDetail() {
         return <TasksTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} currentUserName={userProfile?.name} />;
       case 'maintenance':
         return <MaintenanceTab project={project} onUpdate={handleUpdate} />;
+      case 'files':
+        return <FilesTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} />;
+      case 'activity':
+        return <ActivityTab project={project} />;
       case 'full-view':
         return <FullViewTab project={project} />;
       default:

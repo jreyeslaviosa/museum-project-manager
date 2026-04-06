@@ -366,6 +366,24 @@ function FullViewTab({ project }) {
         </div>
       )}
 
+      {/* Files */}
+      {(project.files || []).length > 0 && (
+        <div style={sectionStyle}>
+          <div style={{ ...labelStyle, marginBottom: '0.5rem' }}>
+            Files & Links ({project.files.length})
+          </div>
+          {project.files.map(file => (
+            <div key={file.id} style={{ padding: '0.3rem 0', borderBottom: '1px solid var(--border)', fontSize: '0.85rem' }}>
+              <a href={file.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--secondary)', textDecoration: 'none', fontWeight: 500 }}>
+                {file.label}
+              </a>
+              <span style={{ color: 'var(--gray)', marginLeft: '0.5rem', fontSize: '0.75rem' }}>({file.category || 'Other'})</span>
+              {file.notes && <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>{file.notes}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Notes */}
       {project.notes && (
         <div>

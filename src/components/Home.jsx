@@ -12,10 +12,51 @@ function Home() {
   const [allData, setAllData] = useState({ projects: [], inventory: [], consumables: [] })
   const [dataLoaded, setDataLoaded] = useState(false)
   const inputRef = useRef(null)
+  const [notifications, setNotifications] = useState([])
+  const [showNotifications, setShowNotifications] = useState(false)
 
   const handleLogout = () => {
     signOut(auth)
   }
+
+  // Load notifications on mount
+  useEffect(() => {
+    if (!userProfile?.name) return
+    getProjects().then(projects => {
+      const alerts = []
+      const now = new Date()
+      const threeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+      const userName = userProfile.name.toLowerCase()
+
+      projects.forEach(p => {
+        (p.tasks || []).forEach(t => {
+          if (t.completed) return
+          const assignees = [...(t.assignees || []), t.assignee].filter(Boolean).map(a => a.toLowerCase())
+          const isAssigned = assignees.includes(userName)
+
+          if (isAssigned && t.dueDate) {
+            const due = new Date(t.dueDate)
+            if (due < now) {
+              alerts.push({ id: `overdue-${t.id}`, type: 'overdue', message: `Overdue: ${t.title}`, sub: p.title, link: `/project/${p.id}` })
+            } else if (due <= threeDays) {
+              const days = Math.ceil((due - now) / (1000 * 60 * 60 * 24))
+              alerts.push({ id: `due-${t.id}`, type: 'deadline', message: `Due ${days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`}: ${t.title}`, sub: p.title, link: `/project/${p.id}` })
+            }
+          }
+        })
+
+        if (isAdmin) {
+          (p.maintenanceLog || []).forEach(m => {
+            if (!m.resolved) {
+              alerts.push({ id: `maint-${m.id}`, type: 'maintenance', message: `Open issue: ${m.title || m.issue}`, sub: p.title, link: `/project/${p.id}` })
+            }
+          })
+        }
+      })
+
+      setNotifications(alerts)
+    })
+  }, [userProfile, isAdmin])
 
   // Load data on first search focus
   const loadData = async () => {
@@ -81,6 +122,66 @@ function Home() {
       <header className="header">
         <h1>Museum Project Manager</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Notification Bell */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', color: 'white',
+                fontSize: '1.2rem', padding: '0.3rem', position: 'relative'
+              }}
+            >
+              &#128276;
+              {notifications.length > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-2px', right: '-4px',
+                  background: 'var(--accent)', color: 'white', borderRadius: '50%',
+                  width: '18px', height: '18px', fontSize: '0.65rem', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            {showNotifications && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem',
+                background: 'white', border: '1px solid var(--border)', borderRadius: '8px',
+                width: '320px', maxHeight: '400px', overflowY: 'auto',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 100
+              }}>
+                <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '0.85rem', color: 'var(--dark)' }}>
+                  Notifications ({notifications.length})
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '1.5rem 1rem', textAlign: 'center', color: 'var(--gray)', fontSize: '0.85rem' }}>
+                    All clear, nothing to report.
+                  </div>
+                ) : (
+                  notifications.map(n => (
+                    <Link
+                      key={n.id}
+                      to={n.link}
+                      onClick={() => setShowNotifications(false)}
+                      style={{
+                        display: 'block', padding: '0.6rem 1rem',
+                        borderBottom: '1px solid var(--border)',
+                        textDecoration: 'none', color: 'inherit'
+                      }}
+                    >
+                      <div style={{
+                        fontSize: '0.8rem', fontWeight: 500,
+                        color: n.type === 'overdue' ? 'var(--accent)' : 'var(--dark)'
+                      }}>
+                        {n.message}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--gray)' }}>{n.sub}</div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
             {userProfile?.name}
           </span>

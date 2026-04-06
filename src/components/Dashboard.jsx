@@ -8,6 +8,8 @@ function Dashboard() {
   const { isAdmin, isBuilder, userProfile } = useUser();
   const [projects, setProjects] = useState([]);
   const [activeView, setActiveView] = useState('overview');
+  const [projectFilter, setProjectFilter] = useState('active');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   useEffect(() => {
     getProjects().then(setProjects);
@@ -177,7 +179,7 @@ function Dashboard() {
               { id: 'overview', label: 'Overview' },
               { id: 'active', label: 'Active Installations', count: activeInstallations.length },
               { id: 'team', label: 'Team Workload' },
-              { id: 'calendar', label: 'Upcoming' },
+              { id: 'calendar', label: 'Calendar' },
               { id: 'shopping', label: 'Shopping List', count: itemsToBuy.length }
             ].map(view => (
               <button
@@ -379,23 +381,54 @@ function Dashboard() {
             })()}
 
             {/* Projects Grid */}
-            <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h2>{isAdmin ? 'All Projects' : 'Projects'}</h2>
+              <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--light)', borderRadius: '6px', padding: '0.2rem' }}>
+                {[
+                  { id: 'active', label: 'Active' },
+                  { id: 'complete', label: 'Completed' },
+                  { id: 'all', label: 'All' }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setProjectFilter(f.id)}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      border: 'none',
+                      borderRadius: '4px',
+                      background: projectFilter === f.id ? 'var(--secondary)' : 'transparent',
+                      color: projectFilter === f.id ? 'white' : 'var(--dark)',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 500
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {projects.length === 0 ? (
-              <div className="empty-state">
-                <h3>No projects yet</h3>
-                <p>{isAdmin ? 'Create your first exhibition project to get started.' : 'No projects have been created yet.'}</p>
-                {isAdmin && (
-                  <Link to="/project/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                    + New Project
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="projects-grid">
-                {projects.map(project => {
+            {(() => {
+              const filteredProjects = projectFilter === 'active'
+                ? projects.filter(p => p.status !== 'complete')
+                : projectFilter === 'complete'
+                  ? projects.filter(p => p.status === 'complete')
+                  : projects;
+
+              return filteredProjects.length === 0 ? (
+                <div className="empty-state">
+                  <h3>{projectFilter === 'complete' ? 'No completed projects' : projectFilter === 'active' ? 'No active projects' : 'No projects yet'}</h3>
+                  <p>{isAdmin && projectFilter !== 'complete' ? 'Create your first exhibition project to get started.' : projectFilter === 'complete' ? 'Completed projects will appear here.' : 'No projects have been created yet.'}</p>
+                  {isAdmin && projectFilter !== 'complete' && (
+                    <Link to="/project/new" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                      + New Project
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div className="projects-grid">
+                  {filteredProjects.map(project => {
                   const progress = getProjectProgress(project);
                   const daysToOpening = project.openingDate ? getDaysUntil(project.openingDate) : null;
 
@@ -477,7 +510,8 @@ function Dashboard() {
                   );
                 })}
               </div>
-            )}
+              );
+            })()}
 
             {/* Upcoming Milestones - admin only */}
             {isAdmin && upcomingMilestones.length > 0 && (
@@ -642,65 +676,136 @@ function Dashboard() {
         )}
 
         {/* Calendar/Upcoming Tab - admin only */}
-        {isAdmin && activeView === 'calendar' && (
-          <div className="card">
-            <div className="card-header">
-              <h2>Upcoming Deadlines</h2>
-            </div>
-            <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
-              Tasks and milestones due in the next 14 days
-            </p>
+        {isAdmin && activeView === 'calendar' && (() => {
+          const today = new Date();
+          const [calMonth, setCalMonth] = [calendarMonth, setCalendarMonth];
+          const year = calMonth.getFullYear();
+          const month = calMonth.getMonth();
+          const firstDay = new Date(year, month, 1).getDay();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const monthLabel = calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-            {upcomingDeadlines.length === 0 ? (
-              <div className="empty-state">
-                <p>No upcoming deadlines in the next 14 days.</p>
+          // Collect all events for this month
+          const calEvents = [];
+          projects.forEach(p => {
+            const dates = [
+              { date: p.installDate, label: 'Install', project: p, color: '#3b82f6' },
+              { date: p.openingDate, label: 'Opening', project: p, color: '#8b5cf6' },
+              { date: p.closingDate, label: 'Closing', project: p, color: '#ef4444' },
+              { date: p.deinstallDate, label: 'De-install', project: p, color: '#6b7280' },
+            ];
+            dates.forEach(d => {
+              if (d.date) {
+                const dt = new Date(d.date);
+                if (dt.getMonth() === month && dt.getFullYear() === year) {
+                  calEvents.push({ ...d, day: dt.getDate() });
+                }
+              }
+            });
+            (p.tasks || []).filter(t => !t.completed && t.dueDate).forEach(t => {
+              const dt = new Date(t.dueDate);
+              if (dt.getMonth() === month && dt.getFullYear() === year) {
+                calEvents.push({ date: t.dueDate, label: t.title, project: p, color: t.isMilestone ? '#f59e0b' : '#10b981', day: dt.getDate(), isTask: true });
+              }
+            });
+          });
+
+          const cells = [];
+          for (let i = 0; i < firstDay; i++) cells.push(null);
+          for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+          return (
+            <div className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <button className="btn btn-outline btn-small" onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}>Prev</button>
+                <h2 style={{ margin: 0 }}>{monthLabel}</h2>
+                <button className="btn btn-outline btn-small" onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}>Next</button>
               </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '0.5rem' }}>
-                {upcomingDeadlines.map(task => {
-                  const days = getDaysUntil(task.dueDate);
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', background: 'var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                  <div key={d} style={{ padding: '0.5rem', background: 'var(--light)', textAlign: 'center', fontSize: '0.75rem', fontWeight: 600, color: 'var(--gray)' }}>{d}</div>
+                ))}
+                {cells.map((day, idx) => {
+                  const dayEvents = day ? calEvents.filter(e => e.day === day) : [];
+                  const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
                   return (
-                    <Link
-                      key={task.id}
-                      to={`/project/${task.projectId}`}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '0.75rem 1rem',
-                        background: task.isMilestone ? '#fffbeb' : 'var(--light)',
-                        borderRadius: '6px',
-                        borderLeft: task.isMilestone ? '4px solid #f59e0b' : '4px solid var(--secondary)',
-                        textDecoration: 'none',
-                        color: 'inherit'
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {task.title}
-                        </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
-                          {task.projectTitle}
-                          {getAssignees(task).length > 0 && ` • ${getAssignees(task).join(', ')}`}
-                        </div>
-                      </div>
-                      <span style={{
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                        background: days <= 3 ? '#fef2f2' : days <= 7 ? '#fef3c7' : '#f0fdf4',
-                        color: days <= 3 ? 'var(--accent)' : days <= 7 ? '#92400e' : 'var(--success)'
-                      }}>
-                        {days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `${days} days`}
-                      </span>
-                    </Link>
+                    <div key={idx} style={{
+                      padding: '0.4rem',
+                      background: 'white',
+                      minHeight: '80px',
+                      fontSize: '0.8rem'
+                    }}>
+                      {day && (
+                        <>
+                          <div style={{
+                            fontWeight: isToday ? 700 : 400,
+                            color: isToday ? 'white' : 'var(--dark)',
+                            background: isToday ? 'var(--secondary)' : 'transparent',
+                            borderRadius: '50%',
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '0.2rem',
+                            fontSize: '0.75rem'
+                          }}>
+                            {day}
+                          </div>
+                          {dayEvents.slice(0, 3).map((ev, i) => (
+                            <Link
+                              key={i}
+                              to={`/project/${ev.project.id}`}
+                              style={{
+                                display: 'block',
+                                padding: '0.1rem 0.25rem',
+                                marginBottom: '1px',
+                                borderRadius: '2px',
+                                fontSize: '0.65rem',
+                                lineHeight: 1.3,
+                                background: ev.color + '18',
+                                color: ev.color,
+                                fontWeight: 500,
+                                textDecoration: 'none',
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                                textOverflow: 'ellipsis'
+                              }}
+                              title={`${ev.label} - ${ev.project.title}`}
+                            >
+                              {ev.isTask ? ev.label : `${ev.label}: ${ev.project.title}`}
+                            </Link>
+                          ))}
+                          {dayEvents.length > 3 && (
+                            <div style={{ fontSize: '0.6rem', color: 'var(--gray)' }}>+{dayEvents.length - 3} more</div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   );
                 })}
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', fontSize: '0.75rem' }}>
+                {[
+                  { label: 'Install', color: '#3b82f6' },
+                  { label: 'Opening', color: '#8b5cf6' },
+                  { label: 'Closing', color: '#ef4444' },
+                  { label: 'De-install', color: '#6b7280' },
+                  { label: 'Milestone', color: '#f59e0b' },
+                  { label: 'Task Due', color: '#10b981' },
+                ].map(l => (
+                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: l.color }} />
+                    <span style={{ color: 'var(--gray)' }}>{l.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Shopping List Tab - admin only */}
         {isAdmin && activeView === 'shopping' && (

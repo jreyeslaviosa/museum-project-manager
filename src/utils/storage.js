@@ -70,6 +70,7 @@ export const createEmptyProject = () => ({
   deinstallDate: '',
   budget: 0,
   maintenanceLog: [],
+  files: [],
   inventoryItems: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
