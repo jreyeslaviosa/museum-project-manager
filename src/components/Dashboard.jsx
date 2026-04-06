@@ -315,8 +315,8 @@ function Dashboard() {
               </div>
             )}
 
-            {/* My Tasks - for builders */}
-            {isBuilder && userProfile?.name && (() => {
+            {/* My Tasks - for everyone */}
+            {userProfile?.name && (() => {
               const myTasks = projects.flatMap(project =>
                 (project.tasks || [])
                   .filter(t => !t.completed && (
