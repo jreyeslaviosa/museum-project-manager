@@ -16,7 +16,7 @@ import Workload from './components/Workload'
 import './App.css'
 
 function AppRoutes() {
-  const { user, loading, isAdmin, isPurchasing } = useUser()
+  const { user, loading, accessDenied, isAdmin, isPurchasing } = useUser()
 
   if (loading) {
     return (
@@ -29,7 +29,7 @@ function AppRoutes() {
   if (!user) {
     return (
       <div className="app">
-        <Login />
+        <Login accessDenied={accessDenied} />
       </div>
     )
   }

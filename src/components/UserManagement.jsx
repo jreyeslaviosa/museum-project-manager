@@ -1,19 +1,50 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getUsers, updateUser } from '../utils/storage';
+import { v4 as uuidv4 } from 'uuid';
+import { getUsers, updateUser, getAllowlist, addToAllowlist, removeFromAllowlist } from '../utils/storage';
 import { USER_ROLES } from '../utils/constants';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
+  const [allowlist, setAllowlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [toast, setToast] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  };
 
   useEffect(() => {
-    getUsers()
-      .then(setUsers)
+    Promise.all([getUsers(), getAllowlist()])
+      .then(([u, a]) => { setUsers(u); setAllowlist(a); })
       .catch(() => setError('Failed to load users. Please check your connection and try again.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email) return;
+    if (allowlist.some(a => a.email.toLowerCase() === email)) {
+      showToast('Email already on the list');
+      return;
+    }
+    await addToAllowlist({ id: uuidv4(), email, addedAt: new Date().toISOString() });
+    setAllowlist(await getAllowlist());
+    setInviteEmail('');
+    showToast('Email added to allowed list');
+  };
+
+  const handleRemoveFromAllowlist = async (id) => {
+    await removeFromAllowlist(id);
+    setAllowlist(await getAllowlist());
+    setDeleteConfirm(null);
+    showToast('Email removed from allowed list');
+  };
 
   const handleRoleChange = async (userId, newRole) => {
     await updateUser(userId, { role: newRole });
@@ -57,8 +88,64 @@ function UserManagement() {
         {!loading && !error && <>
         <h2 style={{ marginBottom: '0.5rem' }}>Team Management</h2>
         <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
-          Manage team member roles. Users are created automatically when they first log in.
+          Manage team member roles and control who can access the app.
         </p>
+
+        {/* Allowed Emails */}
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card-header">
+            <h3 style={{ margin: 0 }}>Allowed Emails</h3>
+          </div>
+          <p style={{ color: 'var(--gray)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+            Only people on this list can sign in.{' '}
+            {allowlist.length === 0 && <strong>The list is empty, so everyone can sign in. Add an email to enable the restriction.</strong>}
+          </p>
+
+          <form onSubmit={handleInvite} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="Enter email address..."
+              required
+              style={{ flex: 1 }}
+            />
+            <button type="submit" className="btn btn-primary btn-small">Add</button>
+          </form>
+
+          {allowlist.length > 0 && (
+            <div style={{ display: 'grid', gap: '0.25rem' }}>
+              {allowlist.sort((a, b) => a.email.localeCompare(b.email)).map(entry => {
+                const hasAccount = users.some(u => u.email?.toLowerCase() === entry.email.toLowerCase());
+                return (
+                  <div
+                    key={entry.id}
+                    style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '0.5rem 0.75rem', background: 'var(--light)', borderRadius: '6px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.9rem' }}>{entry.email}</span>
+                      {hasAccount ? (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--success)' }}>Signed up</span>
+                      ) : (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--gray)' }}>Pending</span>
+                      )}
+                    </div>
+                    <button
+                      className="icon-btn"
+                      onClick={() => setDeleteConfirm(entry)}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      x
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="card">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
@@ -123,6 +210,30 @@ function UserManagement() {
         </div>
         </>}
       </div>
+
+      {/* Delete Confirm Modal */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Remove Email</h2>
+              <button className="modal-close" onClick={() => setDeleteConfirm(null)}>x</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ marginBottom: '0.5rem' }}>
+                Remove <strong>{deleteConfirm.email}</strong> from the allowed list?
+              </p>
+              <p style={{ color: 'var(--gray)', fontSize: '0.85rem' }}>They will not be able to sign in anymore.</p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+                <button className="btn btn-danger" onClick={() => handleRemoveFromAllowlist(deleteConfirm.id)}>Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }

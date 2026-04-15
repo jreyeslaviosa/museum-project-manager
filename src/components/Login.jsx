@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../utils/firebase'
 
-function Login() {
+function Login({ accessDenied }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -41,6 +41,9 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+        {accessDenied && (
+          <p className="login-error">Access denied. Your account is not authorized to use this app. Contact an admin to request access.</p>
+        )}
         {error && <p className="login-error">{error}</p>}
         <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
           {loading ? 'Signing in...' : 'Sign In'}

@@ -14,6 +14,7 @@ const inventoryRef = collection(db, 'inventory')
 const consumablesRef = collection(db, 'consumables')
 const roomsRef = collection(db, 'rooms')
 const issuesRef = collection(db, 'issues')
+const allowlistRef = collection(db, 'allowlist')
 const usersRef = collection(db, 'users')
 
 // Projects
@@ -179,6 +180,28 @@ export const updateIssue = async (id, updates) => {
 
 export const deleteIssue = async (id) => {
   await deleteDoc(doc(db, 'issues', id))
+}
+
+// Allowlist
+
+export const getAllowlist = async () => {
+  const snapshot = await getDocs(allowlistRef)
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export const isEmailAllowed = async (email) => {
+  const snapshot = await getDocs(allowlistRef)
+  if (snapshot.empty) return true // No allowlist = allow everyone (first-time setup)
+  return snapshot.docs.some(d => d.data().email?.toLowerCase() === email.toLowerCase())
+}
+
+export const addToAllowlist = async (entry) => {
+  await setDoc(doc(db, 'allowlist', entry.id), entry)
+  return entry
+}
+
+export const removeFromAllowlist = async (id) => {
+  await deleteDoc(doc(db, 'allowlist', id))
 }
 
 // Users
