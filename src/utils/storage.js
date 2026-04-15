@@ -12,6 +12,7 @@ import {
 const projectsRef = collection(db, 'projects')
 const inventoryRef = collection(db, 'inventory')
 const consumablesRef = collection(db, 'consumables')
+const roomsRef = collection(db, 'rooms')
 const usersRef = collection(db, 'users')
 
 // Projects
@@ -131,6 +132,29 @@ export const updateConsumable = async (id, updates) => {
 
 export const deleteConsumable = async (id) => {
   await deleteDoc(doc(db, 'consumables', id))
+}
+
+// Rooms
+
+export const getRooms = async () => {
+  const snapshot = await getDocs(roomsRef)
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+export const createRoom = async (room) => {
+  await setDoc(doc(db, 'rooms', room.id), room)
+  return room
+}
+
+export const updateRoom = async (id, updates) => {
+  const ref = doc(db, 'rooms', id)
+  await updateDoc(ref, { ...updates, updatedAt: new Date().toISOString() })
+  const snap = await getDoc(ref)
+  return { id: snap.id, ...snap.data() }
+}
+
+export const deleteRoom = async (id) => {
+  await deleteDoc(doc(db, 'rooms', id))
 }
 
 // Users

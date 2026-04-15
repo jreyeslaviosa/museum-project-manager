@@ -10,6 +10,7 @@ import InventoryDetail from './components/inventory/InventoryDetail'
 import Consumables from './components/Consumables'
 import Purchasing from './components/Purchasing'
 import UserManagement from './components/UserManagement'
+import Rooms from './components/Rooms'
 import './App.css'
 
 function AppRoutes() {
@@ -41,6 +42,7 @@ function AppRoutes() {
           <Route path="/project/:id" element={<ProjectDetail />} />
           {isAdmin && <Route path="/inventory" element={<Inventory />} />}
           {isAdmin && <Route path="/inventory/:id" element={<InventoryDetail />} />}
+          <Route path="/rooms" element={<Rooms />} />
           <Route path="/consumables" element={<Consumables />} />
           {(isAdmin || isPurchasing) && <Route path="/purchasing" element={<Purchasing />} />}
           {isAdmin && <Route path="/users" element={<UserManagement />} />}

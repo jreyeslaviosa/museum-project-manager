@@ -281,6 +281,10 @@ function Home() {
               <p>View exhibition details and project information</p>
             </Link>
           )}
+          <Link to="/rooms" className="home-card">
+            <h2>Rooms & Spaces</h2>
+            <p>View room dimensions, floors, and features across locations</p>
+          </Link>
           {isAdmin && (
             <Link to="/inventory" className="home-card">
               <h2>Inventory</h2>
