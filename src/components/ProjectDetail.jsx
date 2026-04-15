@@ -203,6 +203,11 @@ function ProjectDetail() {
           <div>
             <h1>{project.title || 'Untitled Project'}</h1>
             <p className="artist-name">{project.artistName || 'No artist specified'}</p>
+            {project.createdBy && (
+              <p style={{ fontSize: '0.85rem', color: 'var(--gray)', margin: '0.25rem 0 0' }}>
+                Created by: {project.createdBy}
+              </p>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             {isAdmin ? (

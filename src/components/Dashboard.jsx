@@ -11,18 +11,23 @@ function Dashboard() {
   const [projectFilter, setProjectFilter] = useState('active');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [expandedMembers, setExpandedMembers] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     getProjects().then(setProjects);
   }, []);
 
-  const handleDelete = async (e, id) => {
+  const handleDeleteClick = (e, project) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      await deleteProject(id);
-      setProjects(await getProjects());
-    }
+    setDeleteConfirm(project);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    await deleteProject(deleteConfirm.id);
+    setProjects(await getProjects());
+    setDeleteConfirm(null);
   };
 
   const getStatusClass = (status) => {
@@ -454,7 +459,7 @@ function Dashboard() {
                         <h3>{project.title || 'Untitled Project'}</h3>
                         {isAdmin && (
                           <button
-                            onClick={(e) => handleDelete(e, project.id)}
+                            onClick={(e) => handleDeleteClick(e, project)}
                             className="icon-btn"
                             title="Delete project"
                           >
@@ -514,6 +519,11 @@ function Dashboard() {
                           <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
                             PM: {project.projectManager || 'TBD'}
                           </div>
+                          {project.createdBy && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--gray)' }}>
+                              Created by: {project.createdBy}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -969,6 +979,34 @@ function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Delete Project</h2>
+              <button className="modal-close" onClick={() => setDeleteConfirm(null)}>×</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ marginBottom: '0.5rem' }}>
+                Are you sure you want to delete <strong>{deleteConfirm.title}</strong>?
+              </p>
+              <p style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>
+                This action cannot be undone. All project data, tasks, and files will be permanently removed.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>
+                  Cancel
+                </button>
+                <button className="btn btn-danger" onClick={handleDeleteConfirm}>
+                  Delete Project
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { createProject, createEmptyProject } from '../utils/storage';
 import { TEAM_MEMBERS, PROJECT_TEMPLATES } from '../utils/constants';
+import { useUser } from '../utils/UserContext';
 
 function NewProject() {
   const navigate = useNavigate();
+  const { userProfile } = useUser();
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
   const [formData, setFormData] = useState({
     title: '',
@@ -33,6 +35,7 @@ function NewProject() {
       ...createEmptyProject(),
       ...formData,
       id: uuidv4(),
+      createdBy: userProfile?.name || 'Unknown',
       museumProviding: withIds(templateData.museumProviding),
       artistProviding: withIds(templateData.artistProviding),
       tasks: withIds(templateData.tasks),
