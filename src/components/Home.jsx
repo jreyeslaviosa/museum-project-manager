@@ -289,6 +289,10 @@ function Home() {
             <h2>Maintenance Issues</h2>
             <p>Report and track maintenance problems across all spaces</p>
           </Link>
+          <Link to="/workload" className="home-card">
+            <h2>Team Workload</h2>
+            <p>See who's busy, who's available, and what's overdue</p>
+          </Link>
           {isAdmin && (
             <Link to="/inventory" className="home-card">
               <h2>Inventory</h2>

@@ -12,6 +12,7 @@ import Purchasing from './components/Purchasing'
 import UserManagement from './components/UserManagement'
 import Rooms from './components/Rooms'
 import Issues from './components/Issues'
+import Workload from './components/Workload'
 import './App.css'
 
 function AppRoutes() {
@@ -45,6 +46,7 @@ function AppRoutes() {
           {isAdmin && <Route path="/inventory/:id" element={<InventoryDetail />} />}
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/issues" element={<Issues />} />
+          <Route path="/workload" element={<Workload />} />
           <Route path="/consumables" element={<Consumables />} />
           {(isAdmin || isPurchasing) && <Route path="/purchasing" element={<Purchasing />} />}
           {isAdmin && <Route path="/users" element={<UserManagement />} />}
