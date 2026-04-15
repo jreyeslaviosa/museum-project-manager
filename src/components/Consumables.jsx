@@ -20,6 +20,9 @@ function Consumables() {
   const [quickPerson, setQuickPerson] = useState('');
   const [quickNotes, setQuickNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Edit modal state
   const [editForm, setEditForm] = useState({
@@ -28,7 +31,10 @@ function Consumables() {
   });
 
   useEffect(() => {
-    getConsumables().then(setItems);
+    getConsumables()
+      .then(setItems)
+      .catch(() => setError('Failed to load consumables. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleQuickAdd = async (e) => {
@@ -67,10 +73,9 @@ function Consumables() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Remove this item?')) {
-      await deleteConsumable(id);
-      setItems(await getConsumables());
-    }
+    await deleteConsumable(id);
+    setItems(await getConsumables());
+    setDeleteConfirm(null);
   };
 
   const handleStatusChange = async (id, status) => {
@@ -204,6 +209,16 @@ function Consumables() {
       </header>
 
       <div className="container">
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading consumables...</div>
+        )}
+        {error && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p>
+            <button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        )}
+        {!loading && !error && <>
         {/* Quick Add Bar */}
         <div className="card" style={{ marginBottom: '1rem' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', color: 'var(--gray)' }}>
@@ -397,7 +412,7 @@ function Consumables() {
                               <button className="icon-btn" onClick={() => handleReorder(item)} title="Request again">Reorder</button>
                             )}
                             <button className="icon-btn" onClick={() => startEdit(item)}>Edit</button>
-                            <button className="icon-btn" onClick={() => handleDelete(item.id)}>Delete</button>
+                            <button className="icon-btn" onClick={() => setDeleteConfirm(item)}>Delete</button>
                           </div>
                         </td>
                       )}
@@ -408,6 +423,7 @@ function Consumables() {
             </div>
           )}
         </div>
+        </>}
       </div>
 
       {/* Edit Modal (full details) */}
@@ -507,6 +523,29 @@ function Consumables() {
                 <button type="submit" className="btn btn-primary">Save Changes</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Delete Consumable</h2>
+              <button className="modal-close" onClick={() => setDeleteConfirm(null)}>×</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ marginBottom: '0.5rem' }}>
+                Are you sure you want to delete <strong>{deleteConfirm.name}</strong>?
+              </p>
+              <p style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>
+                This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+                <button className="btn btn-danger" onClick={() => handleDelete(deleteConfirm.id)}>Delete</button>
+              </div>
+            </div>
           </div>
         </div>
       )}

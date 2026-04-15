@@ -295,9 +295,9 @@ function MaintenanceTab({ project, onUpdate }) {
           <div className="empty-state">
             <p>
               {filter === 'all'
-                ? 'No maintenance items logged yet.'
+                ? 'No maintenance items logged yet. Use "Report Issue" to track problems that need attention.'
                 : filter === 'open'
-                ? 'No open issues.'
+                ? 'No open issues. All clear.'
                 : 'No resolved items.'}
             </p>
           </div>

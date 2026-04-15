@@ -8,10 +8,14 @@ function Purchasing() {
   const [consumables, setConsumables] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeView, setActiveView] = useState('pending');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getConsumables().then(setConsumables);
-    getProjects().then(setProjects);
+    Promise.all([getConsumables(), getProjects()])
+      .then(([c, p]) => { setConsumables(c); setProjects(p); })
+      .catch(() => setError('Failed to load data. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleStatusChange = async (id, status) => {
@@ -115,6 +119,16 @@ function Purchasing() {
       </header>
 
       <div className="container">
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading purchasing data...</div>
+        )}
+        {error && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p>
+            <button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        )}
+        {!loading && !error && <>
         <h2 style={{ marginBottom: '1.5rem' }}>Purchasing Dashboard</h2>
 
         {/* Summary Stats */}
@@ -474,6 +488,7 @@ function Purchasing() {
             )}
           </div>
         )}
+        </>}
       </div>
     </div>
   );

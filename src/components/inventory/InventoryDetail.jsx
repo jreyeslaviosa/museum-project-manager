@@ -14,19 +14,36 @@ function InventoryDetail() {
   const [projects, setProjects] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
-      const inventoryItem = await getInventoryItem(id);
-      if (!inventoryItem) {
-        navigate('/inventory');
-        return;
+      try {
+        const inventoryItem = await getInventoryItem(id);
+        if (!inventoryItem) {
+          navigate('/inventory');
+          return;
+        }
+        setItem(inventoryItem);
+        setProjects(await getProjects());
+      } catch {
+        setError('Failed to load item. Please check your connection and try again.');
+      } finally {
+        setLoading(false);
       }
-      setItem(inventoryItem);
-      setProjects(await getProjects());
     };
     loadData();
   }, [id, navigate]);
+
+  if (loading) {
+    return <div className="app"><header className="header"><Link to="/"><h1>Museum Project Manager</h1></Link></header><div className="container" style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading item...</div></div>;
+  }
+
+  if (error) {
+    return <div className="app"><header className="header"><Link to="/"><h1>Museum Project Manager</h1></Link></header><div className="container" style={{ textAlign: 'center', padding: '3rem' }}><p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p><button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button></div></div>;
+  }
 
   if (!item) return null;
 
@@ -38,10 +55,8 @@ function InventoryDetail() {
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"? This cannot be undone.`)) {
-      await deleteInventoryItem(id);
-      navigate('/inventory');
-    }
+    await deleteInventoryItem(id);
+    navigate('/inventory');
   };
 
   const handleCheckout = async (checkoutData, assignmentType) => {
@@ -151,9 +166,9 @@ function InventoryDetail() {
       </header>
 
       <div className="container">
-        <Link to="/inventory" className="back-link">
-          &larr; Back to Inventory
-        </Link>
+        <button className="back-link" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/inventory')} style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}>
+          &larr; Back
+        </button>
 
         <div className="inventory-detail-header">
           <div>
@@ -191,7 +206,7 @@ function InventoryDetail() {
             <button className="btn btn-outline" onClick={() => setShowEditModal(true)}>
               Edit
             </button>
-            <button className="btn btn-danger" onClick={handleDelete}>
+            <button className="btn btn-danger" onClick={() => setShowDeleteConfirm(true)}>
               Delete
             </button>
           </div>
@@ -451,6 +466,29 @@ function InventoryDetail() {
           onCancelReservation={handleCancelReservation}
           onClose={() => setShowCheckoutModal(false)}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Delete Item</h2>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>×</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ marginBottom: '0.5rem' }}>
+                Are you sure you want to delete <strong>{item.name}</strong>?
+              </p>
+              <p style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>
+                This action cannot be undone. All item data and checkout history will be permanently removed.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                <button className="btn btn-danger" onClick={handleDelete}>Delete Item</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

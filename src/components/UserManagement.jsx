@@ -5,9 +5,14 @@ import { USER_ROLES } from '../utils/constants';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getUsers().then(setUsers);
+    getUsers()
+      .then(setUsers)
+      .catch(() => setError('Failed to load users. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleRoleChange = async (userId, newRole) => {
@@ -40,6 +45,16 @@ function UserManagement() {
       <div className="container">
         <Link to="/" className="back-link">← Back to Home</Link>
 
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading team data...</div>
+        )}
+        {error && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p>
+            <button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        )}
+        {!loading && !error && <>
         <h2 style={{ marginBottom: '0.5rem' }}>Team Management</h2>
         <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
           Manage team member roles. Users are created automatically when they first log in.
@@ -106,6 +121,7 @@ function UserManagement() {
             </div>
           )}
         </div>
+        </>}
       </div>
     </div>
   );

@@ -18,18 +18,30 @@ function Inventory() {
   const [editingItem, setEditingItem] = useState(null);
   const [checkoutItem, setCheckoutItem] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    getInventory().then(setInventory);
-    getProjects().then(setProjects);
+    Promise.all([getInventory(), getProjects()])
+      .then(([inv, proj]) => { setInventory(inv); setProjects(proj); })
+      .catch(() => setError('Failed to load inventory. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, []);
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 2000);
+  };
 
   const handleSaveItem = async (item) => {
     const userName = userProfile?.name || 'Unknown';
     if (editingItem) {
       await updateInventoryItem(item.id, { ...item, updatedBy: userName });
+      showToast('Item updated');
     } else {
       await createInventoryItem({ ...item, createdBy: userName, updatedBy: userName });
+      showToast('Item added');
     }
     setInventory(await getInventory());
     setShowAddModal(false);
@@ -39,6 +51,7 @@ function Inventory() {
   const handleDeleteItem = async (id) => {
     await deleteInventoryItem(id);
     setInventory(await getInventory());
+    showToast('Item deleted');
   };
 
   const handleEditItem = (item) => {
@@ -151,7 +164,16 @@ function Inventory() {
         </div>
       </header>
 
-      <div className="inventory-layout">
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading inventory...</div>
+      )}
+      {error && (
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p>
+          <button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
+      {!loading && !error && <div className="inventory-layout">
         {/* Category Sidebar */}
         <aside className="inventory-sidebar">
           <div className="sidebar-header">Categories</div>
@@ -207,7 +229,7 @@ function Inventory() {
             />
           </div>
         </main>
-      </div>
+      </div>}
 
       {/* Modals */}
       {showAddModal && (
@@ -239,6 +261,10 @@ function Inventory() {
           onImport={handleImport}
           onClose={() => setShowImportModal(false)}
         />
+      )}
+
+      {toast && (
+        <div className="toast">{toast}</div>
       )}
     </div>
   );

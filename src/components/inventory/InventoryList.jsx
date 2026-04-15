@@ -9,6 +9,7 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
   const [conditionFilter, setConditionFilter] = useState('all');
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const filteredAndSorted = useMemo(() => {
     let result = [...inventory];
@@ -274,11 +275,7 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
                       </button>
                       <button
                         className="icon-btn"
-                        onClick={() => {
-                          if (window.confirm(`Delete "${item.name}"?`)) {
-                            onDelete(item.id);
-                          }
-                        }}
+                        onClick={() => setDeleteConfirm(item)}
                         title="Delete"
                       >
                         x
@@ -289,6 +286,29 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header">
+              <h2>Delete Item</h2>
+              <button className="modal-close" onClick={() => setDeleteConfirm(null)}>×</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ marginBottom: '0.5rem' }}>
+                Are you sure you want to delete <strong>{deleteConfirm.name}</strong>?
+              </p>
+              <p style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>
+                This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+                <button className="btn btn-danger" onClick={() => { onDelete(deleteConfirm.id); setDeleteConfirm(null); }}>Delete Item</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

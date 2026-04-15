@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { INVENTORY_CATEGORIES, CONDITION_OPTIONS } from '../../utils/constants';
 import { createEmptyInventoryItem } from '../../utils/storage';
@@ -7,7 +7,21 @@ function InventoryItemModal({ item, onSave, onClose }) {
   const isEditing = !!item;
   const [formData, setFormData] = useState(item || createEmptyInventoryItem());
   const [dragActive, setDragActive] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Warn on browser close/refresh with unsaved form data
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  const handleClose = useCallback(() => {
+    if (isDirty && !window.confirm('You have unsaved changes. Are you sure you want to close?')) return;
+    onClose();
+  }, [isDirty, onClose]);
 
   const calculateDepreciation = (purchaseCost, purchaseDate, depreciationYears) => {
     if (!purchaseCost || !purchaseDate || !depreciationYears) return purchaseCost || 0;
@@ -18,6 +32,7 @@ function InventoryItemModal({ item, onSave, onClose }) {
   };
 
   const handleChange = (field, value) => {
+    setIsDirty(true);
     const updates = { [field]: value };
 
     // Auto-calculate current value when relevant fields change
@@ -101,11 +116,11 @@ function InventoryItemModal({ item, onSave, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal inventory-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{isEditing ? 'Edit Item' : 'Add New Item'}</h3>
-          <button className="icon-btn" onClick={onClose}>x</button>
+          <button className="icon-btn" onClick={handleClose}>x</button>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -374,7 +389,7 @@ function InventoryItemModal({ item, onSave, onClose }) {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>
+            <button type="button" className="btn btn-outline" onClick={handleClose}>
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">

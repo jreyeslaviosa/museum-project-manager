@@ -537,7 +537,7 @@ function TasksTab({ project, onUpdate, readOnly, currentUserName }) {
               <div className="empty-state">
                 <p>
                   {filter === 'all' && !filterByPerson
-                    ? 'No tasks yet. Click "Add Task" to create one.'
+                    ? (readOnly ? 'No tasks have been assigned yet. Your project manager will add tasks here.' : 'No tasks yet. Click "Add Task" to create one.')
                     : 'No matching tasks found.'}
                 </p>
               </div>

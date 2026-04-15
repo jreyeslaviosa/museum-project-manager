@@ -44,20 +44,34 @@ function ProjectDetail() {
   const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const tabs = isBuilder ? BUILDER_TABS : ADMIN_TABS;
+
+  // Warn on browser close/refresh while saving
+  useEffect(() => {
+    if (!saving) return;
+    const handler = (e) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [saving]);
 
   useEffect(() => {
     setActiveTab('overview');
   }, [isBuilder]);
 
   useEffect(() => {
-    getProject(id).then(data => {
-      if (!data) {
-        navigate('/');
-        return;
-      }
-      setProject(data);
-    });
+    getProject(id)
+      .then(data => {
+        if (!data) {
+          navigate('/');
+          return;
+        }
+        setProject(data);
+      })
+      .catch(() => setError('Failed to load project. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, [id, navigate]);
 
   const logActivity = (existingLog, entries) => {
@@ -135,19 +149,32 @@ function ProjectDetail() {
 
   const handleUpdate = async (updates) => {
     setSaving(true);
-    const changes = detectChanges(updates);
-    const finalUpdates = { ...updates, updatedAt: new Date().toISOString() };
-    if (changes.length > 0) {
-      finalUpdates.activityLog = logActivity(project.activityLog, changes);
+    try {
+      const changes = detectChanges(updates);
+      const finalUpdates = { ...updates, updatedAt: new Date().toISOString() };
+      if (changes.length > 0) {
+        finalUpdates.activityLog = logActivity(project.activityLog, changes);
+      }
+      const updated = await updateProject(id, finalUpdates);
+      setProject(updated);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch {
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setSaving(false);
     }
-    const updated = await updateProject(id, finalUpdates);
-    setProject(updated);
-    setTimeout(() => setSaving(false), 500);
   };
 
-  if (!project) {
-    return <div className="container">Loading...</div>;
+  if (loading) {
+    return <div className="app"><header className="header"><Link to="/"><h1>Museum Project Manager</h1></Link></header><div className="container" style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>Loading project...</div></div>;
   }
+
+  if (error) {
+    return <div className="app"><header className="header"><Link to="/"><h1>Museum Project Manager</h1></Link></header><div className="container" style={{ textAlign: 'center', padding: '3rem' }}><p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p><button className="btn btn-outline" onClick={() => window.location.reload()}>Retry</button></div></div>;
+  }
+
+  if (!project) return null;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -194,10 +221,11 @@ function ProjectDetail() {
       <header className="header">
         <Link to="/"><h1>Museum Project Manager</h1></Link>
         {saving && <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Saving...</span>}
+        {saveSuccess && !saving && <span style={{ fontSize: '0.9rem', color: '#86efac' }}>Changes saved</span>}
       </header>
 
       <div className="container">
-        <Link to="/dashboard" className="back-link">← Back to Projects</Link>
+        <button className="back-link" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}>← Back</button>
 
         <div className="project-header">
           <div>

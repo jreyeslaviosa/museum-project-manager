@@ -12,9 +12,14 @@ function Dashboard() {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [expandedMembers, setExpandedMembers] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getProjects().then(setProjects);
+    getProjects()
+      .then(setProjects)
+      .catch(() => setError('Failed to load projects. Please check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleDeleteClick = (e, project) => {
@@ -186,6 +191,22 @@ function Dashboard() {
       </header>
 
       <div className="container">
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray)' }}>
+            Loading projects...
+          </div>
+        )}
+
+        {error && (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--accent)', marginBottom: '1rem' }}>{error}</p>
+            <button className="btn btn-outline" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && <>
         {/* View Tabs - admin only */}
         {isAdmin && (
           <div style={{
@@ -978,6 +999,7 @@ function Dashboard() {
             )}
           </div>
         )}
+        </>}
       </div>
 
       {/* Delete Confirmation Modal */}
