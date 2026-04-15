@@ -13,8 +13,7 @@ function NewProject() {
     title: '',
     artistName: '',
     projectManager: '',
-    technicalLead: '',
-    status: 'planning'
+    technicalLead: ''
   });
 
   const handleChange = (e) => {
@@ -173,20 +172,6 @@ function NewProject() {
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="status">Initial Status</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                <option value="planning">Planning</option>
-                <option value="in-progress">In Progress</option>
-                <option value="complete">Complete</option>
-              </select>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
