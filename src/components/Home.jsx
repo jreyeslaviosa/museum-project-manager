@@ -285,6 +285,10 @@ function Home() {
             <h2>Rooms & Spaces</h2>
             <p>View room dimensions, floors, and features across locations</p>
           </Link>
+          <Link to="/issues" className="home-card">
+            <h2>Maintenance Issues</h2>
+            <p>Report and track maintenance problems across all spaces</p>
+          </Link>
           {isAdmin && (
             <Link to="/inventory" className="home-card">
               <h2>Inventory</h2>

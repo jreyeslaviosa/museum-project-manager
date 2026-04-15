@@ -182,11 +182,14 @@ function Dashboard() {
               Inventory
             </Link>
           )}
-          {isAdmin && (
+          {isAdmin && <>
             <Link to="/project/new" className="btn btn-primary btn-small">
               + New Project
             </Link>
-          )}
+            <Link to="/project/new?existing=true" className="btn btn-outline btn-small" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              Register Existing
+            </Link>
+          </>}
         </div>
       </header>
 

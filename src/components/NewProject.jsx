@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { createProject, createEmptyProject } from '../utils/storage';
 import { TEAM_MEMBERS, PROJECT_TEMPLATES } from '../utils/constants';
@@ -7,13 +7,16 @@ import { useUser } from '../utils/UserContext';
 
 function NewProject() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isExisting = searchParams.get('existing') === 'true';
   const { userProfile } = useUser();
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
   const [formData, setFormData] = useState({
     title: '',
     artistName: '',
     projectManager: '',
-    technicalLead: ''
+    technicalLead: '',
+    location: ''
   });
 
   const handleChange = (e) => {
@@ -34,6 +37,7 @@ function NewProject() {
       ...createEmptyProject(),
       ...formData,
       id: uuidv4(),
+      status: isExisting ? 'installed' : 'planning',
       createdBy: userProfile?.name || 'Unknown',
       museumProviding: withIds(templateData.museumProviding),
       artistProviding: withIds(templateData.artistProviding),
@@ -59,11 +63,16 @@ function NewProject() {
 
         <div className="card" style={{ maxWidth: '600px' }}>
           <div className="card-header">
-            <h2>Create New Project</h2>
+            <h2>{isExisting ? 'Register Existing Installation' : 'Create New Project'}</h2>
+            {isExisting && (
+              <p style={{ color: 'var(--gray)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                Register an installation that's already in place so you can track maintenance.
+              </p>
+            )}
           </div>
 
-          {/* Template Selector */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          {/* Template Selector — only for new projects */}
+          {!isExisting && <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
               Start from a template
             </label>
@@ -114,7 +123,7 @@ function NewProject() {
                 )}
               </div>
             )}
-          </div>
+          </div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -141,6 +150,20 @@ function NewProject() {
                 placeholder="Artist or collective name"
               />
             </div>
+
+            {isExisting && (
+              <div className="form-group">
+                <label htmlFor="location">Location / Room</label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g., Gallery A, Main Building 2nd Floor"
+                />
+              </div>
+            )}
 
             <div className="form-row">
               <div className="form-group">
@@ -176,7 +199,7 @@ function NewProject() {
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
               <button type="submit" className="btn btn-primary">
-                Create Project
+                {isExisting ? 'Register Installation' : 'Create Project'}
               </button>
               <Link to="/dashboard" className="btn btn-outline">
                 Cancel
