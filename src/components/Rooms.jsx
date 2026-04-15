@@ -326,7 +326,7 @@ function Rooms() {
               <button className="modal-close" onClick={() => setShowModal(false)}>x</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div style={{ padding: '1.5rem', display: 'grid', gap: '1rem' }}>
+              <div style={{ padding: '0 1.5rem 1.5rem', display: 'grid', gap: '1rem' }}>
                 <div className="form-group">
                   <label>Room Name *</label>
                   <input
@@ -338,7 +338,7 @@ function Rooms() {
                   />
                 </div>
 
-                <div className="form-row">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
                     <label>Location</label>
                     <input
@@ -404,7 +404,7 @@ function Rooms() {
                   </div>
                 </div>
 
-                <div className="form-row">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
                     <label>Power Outlets</label>
                     <input
