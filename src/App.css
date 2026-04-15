@@ -698,25 +698,27 @@ tr:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 2rem 1.5rem;
   min-height: calc(100vh - 50px);
 }
 
 .home-options {
-  display: flex;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px;
 }
 
 .home-card {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 2.5rem 3rem;
+  padding: 1.75rem 1.5rem;
   text-decoration: none;
   color: inherit;
   text-align: center;
   transition: border-color 0.15s;
-  width: 260px;
 }
 
 .home-card:hover {
@@ -753,11 +755,7 @@ tr:hover {
   }
 
   .home-options {
-    flex-direction: column;
-  }
-
-  .home-card {
-    width: 100%;
+    grid-template-columns: 1fr;
   }
 
   .equipment-section {
