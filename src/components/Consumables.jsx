@@ -6,7 +6,7 @@ import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS, TEAM_MEMBERS } 
 import { useUser } from '../utils/UserContext';
 
 function Consumables() {
-  const { isAdmin } = useUser();
+  const { isAdmin, userProfile } = useUser();
   const [items, setItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -17,7 +17,7 @@ function Consumables() {
   const [quickName, setQuickName] = useState('');
   const [quickQty, setQuickQty] = useState(1);
   const [quickUnit, setQuickUnit] = useState('pcs');
-  const [quickPerson, setQuickPerson] = useState('');
+  const [quickPerson, setQuickPerson] = useState(userProfile?.name || '');
   const [quickStore, setQuickStore] = useState('');
   const [quickNotes, setQuickNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
