@@ -1,46 +1,82 @@
 # Museum Project Manager
 
-A comprehensive project management application designed for museum exhibitions and installations. Built with React and Vite, this application helps teams manage exhibition projects, track equipment inventory, and coordinate installations.
+A project management app for museum exhibitions and installations. Built with React and Firebase, it helps teams manage projects, track inventory, coordinate maintenance, and handle day-to-day operations across multiple locations.
 
 ## Features
 
 ### Project Management
 - Create and manage exhibition projects with artist information
 - Track project status (Planning, In Progress, Installed, Complete, Maintenance)
+- Project templates (video installation, sculpture, interactive, etc.)
+- Register pre-existing installations for ongoing maintenance tracking
 - Set opening, closing, and deinstall dates
 - Assign project managers and technical leads
-- Task management with milestones and due dates
-- Team workload visualization
+- Task management with milestones, due dates, and multi-assignee support
+- Bill of Materials (BOM) management with shopping list aggregation
+- Equipment lists (artist-provided vs. museum-provided)
+- Installation planning with image uploads
+- Maintenance logging per project
 
-### Equipment Tracking
-- Track equipment provided by artists vs. museum
-- Bill of Materials (BOM) management
-- Shopping list aggregation across projects
-
-### Inventory Management System
-- **Full Asset Tracking**: Manage museum equipment including projectors, lenses, audio, LED, computers, cables, rigging, lighting, and media players
-- **Reservation System**: Reserve equipment for future projects or check out immediately
-- **Status Tracking**: Available, Reserved, In Use, Maintenance, Retired
-- **Condition Monitoring**: Track equipment condition (Excellent, Good, Fair, Needs Repair, Out of Service)
-- **Financial Tracking**: Purchase cost, depreciation, current value calculations
-- **Maintenance Scheduling**: Track maintenance schedules and due dates
-- **Photo Documentation**: Upload and store equipment photos
-- **Checkout History**: Full history of equipment usage across projects
-- **CSV Import/Export**: Bulk import inventory from CSV files
-
-### Project-Inventory Integration
+### Inventory Management
+- Full asset tracking for projectors, lenses, audio, LED, computers, cables, rigging, lighting, and media players
+- Reservation system: reserve equipment for future projects or check out immediately
+- Status tracking: Available, Reserved, In Use, Maintenance, Retired
+- Condition monitoring: Excellent, Good, Fair, Needs Repair, Out of Service
+- Financial tracking with purchase cost, depreciation, and current value
+- Maintenance scheduling with due date tracking
+- Photo documentation and checkout history
+- CSV import/export for bulk operations
 - Assign inventory items directly from project Equipment tab
-- View project installation dates when selecting equipment
-- See equipment availability and return dates
-- Reserve equipment in advance for upcoming exhibitions
+
+### Rooms & Spaces
+- Track room dimensions (L x W x H), floor, and type
+- Room features: WiFi, A/C, dimmer, outlets, load capacity
+- Filter by location and floor
+- See which projects are installed in each room
+
+### Maintenance Issues
+- Standalone issue tracker for problems across all spaces
+- Urgency levels: Low, Medium, High, Critical
+- Status workflow: Open, In Progress, Resolved
+- Room picker from existing rooms or custom location
+- Assign to team members, track who reported and resolved
+
+### Consumables
+- Request workshop supplies (wood, paint, screws, etc.)
+- Quick-add with type-ahead suggestions and store selection
+- Track status: Pending, Ordered, Received
+- Auto-fill requester from logged-in user
+
+### Purchasing
+- Aggregated view of all pending consumable requests and BOM items to buy
+- Filter and sort across all projects
+
+### Team Workload
+- Cross-project view of each team member's active and completed tasks
+- Relative load bars for visual comparison
+- Overdue task highlighting
+- Filter by busy, available, or overdue members
+- Expandable task details grouped by project
+
+### Authentication & Access Control
+- Firebase Authentication (email/password)
+- Email allowlist: admins control who can sign in
+- Role-based access: Admin, Purchasing, Builder
+- First user automatically becomes admin
+- Empty allowlist allows open access (for initial setup)
+
+### Other
+- Global search across projects, inventory, and consumables
+- Notification bell for overdue tasks and upcoming deadlines
+- Responsive design for desktop and mobile
 
 ## Tech Stack
 
 - **React 19** - UI framework
 - **Vite 7** - Build tool and dev server
 - **React Router DOM 7** - Client-side routing
+- **Firebase** - Authentication and Firestore database
 - **UUID** - Unique identifier generation
-- **LocalStorage** - Data persistence (no backend required)
 
 ## Getting Started
 
@@ -48,12 +84,13 @@ A comprehensive project management application designed for museum exhibitions a
 
 - Node.js 18+
 - npm or yarn
+- A Firebase project with Authentication and Firestore enabled
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/museum-project-manager.git
+git clone https://github.com/jreyeslaviosa/museum-project-manager.git
 cd museum-project-manager
 ```
 
@@ -62,12 +99,32 @@ cd museum-project-manager
 npm install
 ```
 
-3. Start the development server:
+3. Create a `src/utils/firebase.js` file with your Firebase config:
+```js
+import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
+
+const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+}
+
+const app = initializeApp(firebaseConfig)
+export const auth = getAuth(app)
+export const db = getFirestore(app)
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ### Build for Production
 
@@ -77,96 +134,67 @@ npm run build
 
 The built files will be in the `dist` directory.
 
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
 ## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── Dashboard.jsx          # Main dashboard with project overview
+│   ├── Home.jsx               # Home page with search and navigation
+│   ├── Login.jsx              # Login page
+│   ├── Dashboard.jsx          # Admin dashboard with project overview
 │   ├── ProjectDetail.jsx      # Individual project view
-│   ├── NewProject.jsx         # Create new project form
-│   ├── Inventory.jsx          # Main inventory management page
+│   ├── NewProject.jsx         # Create new project / register existing
+│   ├── Inventory.jsx          # Inventory management
+│   ├── Consumables.jsx        # Consumable supplies tracking
+│   ├── Purchasing.jsx         # Purchasing dashboard
+│   ├── Rooms.jsx              # Rooms & spaces management
+│   ├── Issues.jsx             # Maintenance issue tracker
+│   ├── Workload.jsx           # Team workload overview
+│   ├── UserManagement.jsx     # Team management and email allowlist
 │   ├── inventory/
-│   │   ├── InventoryList.jsx      # Filterable inventory table
-│   │   ├── InventoryDetail.jsx    # Single item detail view
-│   │   ├── InventoryItemModal.jsx # Add/edit inventory item
-│   │   ├── InventoryStats.jsx     # Dashboard statistics
-│   │   ├── CheckoutModal.jsx      # Reserve/checkout/return flow
-│   │   └── ImportModal.jsx        # CSV import functionality
+│   │   ├── InventoryList.jsx
+│   │   ├── InventoryDetail.jsx
+│   │   ├── InventoryItemModal.jsx
+│   │   ├── InventoryStats.jsx
+│   │   ├── CheckoutModal.jsx
+│   │   └── ImportModal.jsx
 │   └── tabs/
-│       ├── OverviewTab.jsx        # Project overview
-│       ├── TechRiderTab.jsx       # Technical rider management
-│       ├── EquipmentTab.jsx       # Equipment lists + inventory assignment
-│       ├── InstallationTab.jsx    # Installation planning
-│       ├── BOMTab.jsx             # Bill of materials
-│       ├── TasksTab.jsx           # Task management
-│       └── MaintenanceTab.jsx     # Maintenance logging
+│       ├── OverviewTab.jsx
+│       ├── TechRiderTab.jsx
+│       ├── EquipmentTab.jsx
+│       ├── InstallationTab.jsx
+│       ├── BOMTab.jsx
+│       ├── TasksTab.jsx
+│       └── MaintenanceTab.jsx
 ├── utils/
-│   ├── storage.js             # LocalStorage CRUD operations
-│   └── constants.js           # App constants and options
-├── App.jsx                    # Main app with routing
-├── App.css                    # Global styles
-└── main.jsx                   # Entry point
+│   ├── firebase.js            # Firebase configuration
+│   ├── storage.js             # Firestore CRUD operations
+│   ├── UserContext.jsx        # Auth context and access control
+│   └── constants.js           # App constants, roles, templates
+├── App.jsx
+├── App.css
+└── main.jsx
 ```
 
 ## Data Storage
 
-All data is stored in the browser's LocalStorage:
-- `museum_projects` - Project data
-- `museum_inventory` - Inventory items
+All data is stored in Firebase Firestore:
+- `projects` - Exhibition and installation data
+- `inventory` - Equipment and asset tracking
+- `consumables` - Workshop supply requests
+- `rooms` - Room and space information
+- `issues` - Maintenance issue reports
+- `users` - User profiles and roles
+- `allowlist` - Authorized email addresses
 
-Data persists across browser sessions but is local to each browser/device.
+## Roles
 
-## CSV Import Format
-
-For bulk inventory import, use this CSV format:
-
-```csv
-name,category,serialNumber,condition,location,quantity,purchaseDate,purchaseCost,vendor,warrantyExpiration,notes
-"Panasonic PT-RZ120",projectors,SN12345,excellent,Storage A,1,2023-01-15,8500,B&H Photo,2026-01-15,Main gallery projector
-"Shure SM58",audio,SM58-001,good,Audio Closet,4,2022-06-01,99,Sweetwater,2024-06-01,Backup mics
-```
-
-### Valid Categories
-- projectors, lenses, audio, led, computers, cables, rigging, lighting, media-players, other
-
-### Valid Conditions
-- excellent, good, fair, needs-repair, out-of-service
-
-## Usage Guide
-
-### Creating a Project
-1. Click "+ New Project" from the Dashboard
-2. Fill in project details (title, artist, dates, team)
-3. Save and continue to add equipment, tasks, etc.
-
-### Managing Inventory
-1. Navigate to Inventory from the Dashboard header
-2. Add items manually or import via CSV
-3. Track item status, condition, and location
-
-### Reserving Equipment for a Project
-1. Open a project and go to the Equipment tab
-2. Click "+ Assign from Inventory"
-3. Choose "Reserve for Later" or "Check Out Now"
-4. Select items and set dates
-5. When ready to use, click "Start Use" to change from Reserved to In Use
-6. Return items when the project is complete
+| Role | Access |
+|------|--------|
+| **Admin** | Full access to everything including inventory, user management, and allowlist |
+| **Purchasing** | Admin access plus purchasing dashboard |
+| **Builder** | Read-only projects, request consumables, view rooms/issues/workload |
 
 ## License
 
 MIT
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
