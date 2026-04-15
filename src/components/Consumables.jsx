@@ -18,6 +18,7 @@ function Consumables() {
   const [quickQty, setQuickQty] = useState(1);
   const [quickUnit, setQuickUnit] = useState('pcs');
   const [quickPerson, setQuickPerson] = useState('');
+  const [quickStore, setQuickStore] = useState('');
   const [quickNotes, setQuickNotes] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -47,7 +48,7 @@ function Consumables() {
       quantity: parseInt(quickQty) || 1,
       unit: quickUnit,
       status: 'pending',
-      store: '',
+      store: quickStore,
       cost: null,
       notes: quickNotes.trim(),
       requestedBy: quickPerson,
@@ -60,16 +61,10 @@ function Consumables() {
     setQuickName('');
     setQuickQty(1);
     setQuickUnit('pcs');
+    setQuickStore('');
     setQuickNotes('');
     setShowNotes(false);
     nameInputRef.current?.focus();
-  };
-
-  const handlePresetSelect = (e) => {
-    if (e.target.value) {
-      setQuickName(e.target.value);
-      e.target.value = '';
-    }
   };
 
   const handleDelete = async (id) => {
@@ -225,67 +220,71 @@ function Consumables() {
             Quick Request
           </div>
           <form onSubmit={handleQuickAdd}>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-              <div style={{ flex: '0 0 auto' }}>
-                <select
-                  onChange={handlePresetSelect}
-                  value=""
-                  style={{ padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
-                >
-                  <option value="">Common items...</option>
-                  {CONSUMABLE_PRESETS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ flex: '1 1 180px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div>
                 <input
                   ref={nameInputRef}
                   type="text"
                   value={quickName}
                   onChange={(e) => setQuickName(e.target.value)}
-                  placeholder="Item name (or pick from dropdown)"
+                  placeholder="Item name — type or pick from suggestions"
+                  list="consumable-presets"
                   style={{ width: '100%', padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem' }}
                 />
+                <datalist id="consumable-presets">
+                  {CONSUMABLE_PRESETS.map(p => (
+                    <option key={p} value={p} />
+                  ))}
+                </datalist>
               </div>
-              <div style={{ display: 'flex', gap: '0.35rem', flex: '0 0 auto' }}>
+              <button type="submit" className="btn btn-primary" disabled={!quickName.trim()}>
+                Add
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.35rem' }}>
                 <input
                   type="number"
                   value={quickQty}
                   onChange={(e) => setQuickQty(e.target.value)}
                   min="1"
-                  style={{ width: '55px', padding: '0.6rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', textAlign: 'center' }}
+                  style={{ width: '55px', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', textAlign: 'center' }}
                 />
                 <select
                   value={quickUnit}
                   onChange={(e) => setQuickUnit(e.target.value)}
-                  style={{ padding: '0.6rem 0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+                  style={{ padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
                 >
                   {CONSUMABLE_UNITS.map(u => (
                     <option key={u} value={u}>{u}</option>
                   ))}
                 </select>
               </div>
-              <div style={{ flex: '0 0 auto' }}>
-                <select
-                  value={quickPerson}
-                  onChange={(e) => setQuickPerson(e.target.value)}
-                  style={{ padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
-                >
-                  <option value="">Who?</option>
-                  {TEAM_MEMBERS.map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="btn btn-primary" disabled={!quickName.trim()}>
-                Add
-              </button>
+              <select
+                value={quickStore}
+                onChange={(e) => setQuickStore(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+              >
+                <option value="">Store...</option>
+                {SUGGESTED_STORES.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <select
+                value={quickPerson}
+                onChange={(e) => setQuickPerson(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.85rem', background: 'var(--white)' }}
+              >
+                <option value="">Requested by...</option>
+                {TEAM_MEMBERS.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
               <button
                 type="button"
                 className="btn btn-outline"
                 onClick={() => setShowNotes(!showNotes)}
-                style={{ fontSize: '0.8rem' }}
+                style={{ fontSize: '0.8rem', padding: '0.5rem 0.75rem' }}
               >
                 {showNotes ? 'Hide notes' : '+ Notes'}
               </button>
