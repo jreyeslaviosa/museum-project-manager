@@ -38,6 +38,12 @@ export function UserProvider({ children }) {
         // Check if profile exists by UID
         let profile = await getUserByUid(firebaseUser.uid)
 
+        if (profile && !profile.uid) {
+          // Backfill uid for profiles created before this field existed
+          await updateUser(profile.id, { uid: firebaseUser.uid })
+          profile.uid = firebaseUser.uid
+        }
+
         if (!profile) {
           // Check if admin pre-created a profile by email
           const preCreated = await getUserByEmail(firebaseUser.email)
