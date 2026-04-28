@@ -17,5 +17,5 @@ export default defineConfig({
       },
     },
   ],
-  base: '/museum-project-manager/',
+  base: '/',
 })

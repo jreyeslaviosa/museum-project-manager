@@ -35,7 +35,7 @@ function AppRoutes() {
   }
 
   return (
-    <BrowserRouter basename="/museum-project-manager">
+    <BrowserRouter>
       <div className="app">
         <Routes>
           <Route path="/" element={<Home />} />
