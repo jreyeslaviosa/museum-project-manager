@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjects, deleteProject } from '../utils/storage';
-import { TEAM_MEMBERS } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 function Dashboard() {
-  const { isAdmin, isBuilder, userProfile } = useUser();
+  const { isAdmin, isBuilder, userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [projects, setProjects] = useState([]);
   const [activeView, setActiveView] = useState('overview');
   const [projectFilter, setProjectFilter] = useState('active');

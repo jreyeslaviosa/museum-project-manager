@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getProject, updateProject } from '../utils/storage';
 import { useUser } from '../utils/UserContext';
-import { TEAM_MEMBERS } from '../utils/constants';
 
 // Tab Components
 import OverviewTab from './tabs/OverviewTab';
@@ -40,7 +39,7 @@ const BUILDER_TABS = [
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, isBuilder, userProfile } = useUser();
+  const { isAdmin, isBuilder, userProfile, teamMemberNames } = useUser();
   const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -179,27 +178,27 @@ function ProjectDetail() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} />;
+        return <OverviewTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} teamMemberNames={teamMemberNames} />;
       case 'tech-rider':
         return <TechRiderTab project={project} onUpdate={handleUpdate} />;
       case 'equipment':
-        return <EquipmentTab project={project} onUpdate={handleUpdate} />;
+        return <EquipmentTab project={project} onUpdate={handleUpdate} teamMemberNames={teamMemberNames} />;
       case 'installation':
         return <InstallationTab project={project} onUpdate={handleUpdate} />;
       case 'bom':
-        return <BOMTab project={project} onUpdate={handleUpdate} />;
+        return <BOMTab project={project} onUpdate={handleUpdate} teamMemberNames={teamMemberNames} />;
       case 'tasks':
-        return <TasksTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} currentUserName={userProfile?.name} />;
+        return <TasksTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} currentUserName={userProfile?.name} teamMemberNames={teamMemberNames} />;
       case 'maintenance':
-        return <MaintenanceTab project={project} onUpdate={handleUpdate} />;
+        return <MaintenanceTab project={project} onUpdate={handleUpdate} teamMemberNames={teamMemberNames} />;
       case 'files':
         return <FilesTab project={project} onUpdate={handleUpdate} readOnly={isBuilder} />;
       case 'activity':
         return <ActivityTab project={project} />;
       case 'full-view':
-        return <FullViewTab project={project} />;
+        return <FullViewTab project={project} teamMemberNames={teamMemberNames} />;
       default:
-        return <OverviewTab project={project} onUpdate={handleUpdate} />;
+        return <OverviewTab project={project} onUpdate={handleUpdate} teamMemberNames={teamMemberNames} />;
     }
   };
 

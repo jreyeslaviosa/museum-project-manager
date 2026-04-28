@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { TEAM_MEMBERS } from '../../utils/constants';
-
-function TasksTab({ project, onUpdate, readOnly, currentUserName }) {
+function TasksTab({ project, onUpdate, readOnly, currentUserName, teamMemberNames: TEAM_MEMBERS = [] }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [filter, setFilter] = useState('all');

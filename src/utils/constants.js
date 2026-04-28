@@ -1,16 +1,3 @@
-export const TEAM_MEMBERS = [
-  'Andre',
-  'Daniel',
-  'Dylan',
-  'Jaime',
-  'Marc',
-  'Rodrigo',
-  'Rommel',
-  'Sofia',
-  'Tiffani',
-  'Tiger'
-];
-
 export const CONSUMABLE_PRESETS = [
   'Wood (plywood)',
   'Wood (MDF)',

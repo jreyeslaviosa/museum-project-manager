@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { TEAM_MEMBERS } from '../../utils/constants';
-
-function BOMTab({ project, onUpdate }) {
+function BOMTab({ project, onUpdate, teamMemberNames: TEAM_MEMBERS = [] }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({

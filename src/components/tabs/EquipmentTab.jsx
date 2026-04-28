@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { getInventory, updateInventoryItem } from '../../utils/storage';
-import { INVENTORY_CATEGORIES, TEAM_MEMBERS } from '../../utils/constants';
+import { INVENTORY_CATEGORIES } from '../../utils/constants';
 
-function EquipmentTab({ project, onUpdate }) {
+function EquipmentTab({ project, onUpdate, teamMemberNames: TEAM_MEMBERS = [] }) {
   const [newArtistItem, setNewArtistItem] = useState({ name: '', quantity: 1, notes: '' });
   const [newMuseumItem, setNewMuseumItem] = useState({ name: '', quantity: 1, notes: '' });
   const [editingId, setEditingId] = useState(null);

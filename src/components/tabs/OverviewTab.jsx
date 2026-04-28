@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { TEAM_MEMBERS } from '../../utils/constants';
 import ImageLightbox from '../ImageLightbox';
 
 const getAssignees = (task) => {
@@ -38,7 +37,7 @@ function CollapsibleSection({ title, count, defaultOpen, children }) {
   );
 }
 
-function OverviewTab({ project, onUpdate, readOnly }) {
+function OverviewTab({ project, onUpdate, readOnly, teamMemberNames: TEAM_MEMBERS = [] }) {
   const [editing, setEditing] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const [formData, setFormData] = useState({

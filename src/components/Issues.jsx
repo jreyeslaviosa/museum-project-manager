@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { getIssues, createIssue, updateIssue, deleteIssue, getRooms } from '../utils/storage';
-import { TEAM_MEMBERS } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 const URGENCY_OPTIONS = [
@@ -19,7 +18,7 @@ const STATUS_OPTIONS = [
 ];
 
 function Issues() {
-  const { isAdmin, userProfile } = useUser();
+  const { isAdmin, userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [issues, setIssues] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);

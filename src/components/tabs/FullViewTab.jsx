@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TEAM_MEMBERS, INVENTORY_CATEGORIES } from '../../utils/constants';
+import { INVENTORY_CATEGORIES } from '../../utils/constants';
 import ImageLightbox from '../ImageLightbox';
 
 const formatDate = (dateString) => {

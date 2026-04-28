@@ -9,7 +9,7 @@ import CheckoutModal from './CheckoutModal';
 function InventoryDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userProfile } = useUser();
+  const { userProfile, teamMemberNames } = useUser();
   const [item, setItem] = useState(null);
   const [projects, setProjects] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -465,6 +465,7 @@ function InventoryDetail() {
           onStartUse={handleStartUse}
           onCancelReservation={handleCancelReservation}
           onClose={() => setShowCheckoutModal(false)}
+          teamMemberNames={teamMemberNames}
         />
       )}
 

@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { createProject, createEmptyProject } from '../utils/storage';
-import { TEAM_MEMBERS, PROJECT_TEMPLATES } from '../utils/constants';
+import { PROJECT_TEMPLATES } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 function NewProject() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isExisting = searchParams.get('existing') === 'true';
-  const { userProfile } = useUser();
+  const { userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
   const [formData, setFormData] = useState({
     title: '',

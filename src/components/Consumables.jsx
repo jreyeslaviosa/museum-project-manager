@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { getConsumables, createConsumable, updateConsumable, deleteConsumable } from '../utils/storage';
-import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS, TEAM_MEMBERS } from '../utils/constants';
+import { CONSUMABLE_PRESETS, SUGGESTED_STORES, CONSUMABLE_UNITS } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 function Consumables() {
-  const { isAdmin, userProfile } = useUser();
+  const { isAdmin, userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [items, setItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [filter, setFilter] = useState('all');

@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { TEAM_MEMBERS } from '../../utils/constants';
-
-function CheckoutModal({ item, projects, onCheckout, onReturn, onClose, onStartUse, onCancelReservation }) {
+function CheckoutModal({ item, projects, onCheckout, onReturn, onClose, onStartUse, onCancelReservation, teamMemberNames: TEAM_MEMBERS = [] }) {
   const isAssigned = (item.status === 'reserved' || item.status === 'in-use') && item.currentCheckout;
   const isReserved = item.status === 'reserved';
   const isInUse = item.status === 'in-use';

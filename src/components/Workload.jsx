@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjects } from '../utils/storage';
-import { TEAM_MEMBERS } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
 
 function Workload() {
-  const { userProfile } = useUser();
+  const { userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

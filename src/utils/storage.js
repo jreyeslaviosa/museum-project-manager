@@ -216,6 +216,12 @@ export const getUserByUid = async (uid) => {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null
 }
 
+export const getUserByEmail = async (email) => {
+  const snapshot = await getDocs(usersRef)
+  const match = snapshot.docs.find(d => d.data().email?.toLowerCase() === email.toLowerCase())
+  return match ? { id: match.id, ...match.data() } : null
+}
+
 export const createUser = async (user) => {
   await setDoc(doc(db, 'users', user.id), user)
   return user
