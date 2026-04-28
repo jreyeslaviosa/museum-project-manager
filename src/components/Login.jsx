@@ -1,54 +1,50 @@
 import { useState } from 'react'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth } from '../utils/firebase'
 
+const googleProvider = new GoogleAuthProvider()
+
 function Login({ accessDenied }) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleGoogleSignIn = async () => {
     setError('')
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      await signInWithPopup(auth, googleProvider)
     } catch (err) {
-      setError('Invalid email or password')
+      if (err.code === 'auth/popup-closed-by-user') {
+        // User closed the popup, no error needed
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        // Duplicate popup, ignore
+      } else {
+        setError('Sign in failed. Please try again.')
+      }
     }
     setLoading(false)
   }
 
   return (
     <div className="login-page">
-      <form className="login-form" onSubmit={handleSubmit}>
+      <div className="login-form">
         <h1>Museum Project Manager</h1>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoFocus
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <p style={{ color: 'var(--gray)', fontSize: '0.9rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+          Sign in with your organization Google account
+        </p>
         {accessDenied && (
           <p className="login-error">Access denied. Your account is not authorized to use this app. Contact an admin to request access.</p>
         )}
         {error && <p className="login-error">{error}</p>}
-        <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
+        <button
+          className="btn btn-primary login-btn"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+        >
+          {loading ? 'Signing in...' : 'Sign in with Google'}
         </button>
-      </form>
+      </div>
     </div>
   )
 }
