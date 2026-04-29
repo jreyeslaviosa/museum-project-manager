@@ -220,6 +220,14 @@ function InventoryDetail() {
             </div>
             <div className="detail-list">
               <div className="detail-row">
+                <span className="detail-label">MAD ID</span>
+                <span className="detail-value">{item.madId || '-'}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Tool ID</span>
+                <span className="detail-value">{item.toolId || '-'}</span>
+              </div>
+              <div className="detail-row">
                 <span className="detail-label">Serial Number</span>
                 <span className="detail-value">{item.serialNumber || '-'}</span>
               </div>

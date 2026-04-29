@@ -129,6 +129,27 @@ function InventoryItemModal({ item, onSave, onClose }) {
             <h4>Basic Information</h4>
             <div className="form-row">
               <div className="form-group">
+                <label>MAD ID</label>
+                <input
+                  type="text"
+                  value={formData.madId}
+                  onChange={e => handleChange('madId', e.target.value)}
+                  placeholder="e.g., MAD644"
+                />
+              </div>
+              <div className="form-group">
+                <label>Tool ID</label>
+                <input
+                  type="text"
+                  value={formData.toolId}
+                  onChange={e => handleChange('toolId', e.target.value)}
+                  placeholder="Tool identifier"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
                 <label>Name *</label>
                 <input
                   type="text"

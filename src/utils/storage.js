@@ -242,6 +242,8 @@ export const deleteUser = async (id) => {
 
 export const createEmptyInventoryItem = () => ({
   id: '',
+  madId: '',
+  toolId: '',
   name: '',
   category: 'other',
   description: '',

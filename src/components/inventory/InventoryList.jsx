@@ -19,6 +19,8 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
       const term = searchTerm.toLowerCase();
       result = result.filter(item =>
         item.name.toLowerCase().includes(term) ||
+        item.madId?.toLowerCase().includes(term) ||
+        item.toolId?.toLowerCase().includes(term) ||
         item.serialNumber?.toLowerCase().includes(term) ||
         item.barcode?.toLowerCase().includes(term) ||
         item.location?.toLowerCase().includes(term) ||
@@ -171,6 +173,9 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
           <table className="inventory-table">
             <thead>
               <tr>
+                <th onClick={() => handleSort('madId')} style={{ cursor: 'pointer' }}>
+                  MAD ID <SortIcon field="madId" />
+                </th>
                 <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
                   Name <SortIcon field="name" />
                 </th>
@@ -198,6 +203,9 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
             <tbody>
               {filteredAndSorted.map(item => (
                 <tr key={item.id}>
+                  <td style={{ fontWeight: 500, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                    {item.madId || '-'}
+                  </td>
                   <td>
                     <Link
                       to={`/inventory/${item.id}`}
@@ -205,6 +213,11 @@ function InventoryList({ inventory, onEdit, onDelete, onCheckout }) {
                     >
                       {item.name}
                     </Link>
+                    {item.toolId && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+                        Tool: {item.toolId}
+                      </div>
+                    )}
                     {item.serialNumber && (
                       <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
                         S/N: {item.serialNumber}

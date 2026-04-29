@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { INVENTORY_CATEGORIES, CONDITION_OPTIONS } from '../../utils/constants';
 
 const CSV_COLUMNS = [
+  { key: 'madId', label: 'MAD ID' },
+  { key: 'toolId', label: 'Tool ID' },
   { key: 'name', label: 'Name', required: true },
   { key: 'category', label: 'Category' },
   { key: 'serialNumber', label: 'Serial Number' },

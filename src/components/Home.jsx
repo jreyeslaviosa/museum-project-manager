@@ -88,6 +88,8 @@ function Home() {
 
     const matchedInventory = allData.inventory.filter(i =>
       i.name?.toLowerCase().includes(q) ||
+      i.madId?.toLowerCase().includes(q) ||
+      i.toolId?.toLowerCase().includes(q) ||
       i.description?.toLowerCase().includes(q) ||
       i.serialNumber?.toLowerCase().includes(q) ||
       i.location?.toLowerCase().includes(q)
