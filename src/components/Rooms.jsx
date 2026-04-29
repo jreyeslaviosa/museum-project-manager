@@ -4,8 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { getRooms, createRoom, updateRoom, deleteRoom, getProjects } from '../utils/storage';
 import { useUser } from '../utils/UserContext';
 
-const FLOOR_OPTIONS = ['Basement', 'Ground Floor', '1st Floor', '2nd Floor', '3rd Floor'];
-const ROOM_TYPES = ['Gallery', 'Workshop', 'Storage', 'Office', 'Lobby', 'Hallway', 'Loading Dock', 'Other'];
+const LOCATIONS = {
+  'Dania Beach': ['Ground Floor', '2nd Floor', 'Backyard'],
+  'Detroit - Museum': ['Basement', 'Ground Floor', '2nd Floor', 'Roof'],
+  'Detroit - Church': ['Ground Floor', '2nd Floor'],
+};
+const LOCATION_NAMES = Object.keys(LOCATIONS);
+const ALL_FLOORS = [...new Set(Object.values(LOCATIONS).flat())];
+const ROOM_TYPES = ['Gallery', 'Workshop', 'Storage', 'Office', 'Lobby', 'Hallway', 'Loading Dock', 'Outdoor', 'Other'];
 
 function Rooms() {
   const { isAdmin } = useUser();
@@ -110,8 +116,8 @@ function Rooms() {
     showToast('Room deleted');
   };
 
-  // Get unique locations from existing rooms
-  const locations = [...new Set(rooms.map(r => r.location).filter(Boolean))];
+  // Get floor options based on selected location in form
+  const getFloorsForLocation = (loc) => LOCATIONS[loc] || ALL_FLOORS;
 
   // Filter rooms
   const filtered = rooms.filter(r => {
@@ -121,7 +127,9 @@ function Rooms() {
   }).sort((a, b) => {
     // Sort by location, then floor, then name
     if (a.location !== b.location) return (a.location || '').localeCompare(b.location || '');
-    if (a.floor !== b.floor) return FLOOR_OPTIONS.indexOf(a.floor) - FLOOR_OPTIONS.indexOf(b.floor);
+    const floorsA = LOCATIONS[a.location] || ALL_FLOORS;
+    const floorsB = LOCATIONS[b.location] || ALL_FLOORS;
+    if (a.floor !== b.floor) return floorsA.indexOf(a.floor) - floorsB.indexOf(b.floor);
     return (a.name || '').localeCompare(b.name || '');
   });
 
@@ -179,25 +187,23 @@ function Rooms() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h2>Rooms & Spaces</h2>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {locations.length > 0 && (
-                <select
-                  value={filterLocation}
-                  onChange={e => setFilterLocation(e.target.value)}
-                  style={{ padding: '0.4rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
-                >
-                  <option value="all">All Locations</option>
-                  {locations.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
-              )}
+              <select
+                value={filterLocation}
+                onChange={e => { setFilterLocation(e.target.value); setFilterFloor('all'); }}
+                style={{ padding: '0.4rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+              >
+                <option value="all">All Locations</option>
+                {LOCATION_NAMES.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
               <select
                 value={filterFloor}
                 onChange={e => setFilterFloor(e.target.value)}
                 style={{ padding: '0.4rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
               >
                 <option value="all">All Floors</option>
-                {FLOOR_OPTIONS.map(f => (
+                {(filterLocation !== 'all' ? getFloorsForLocation(filterLocation) : ALL_FLOORS).map(f => (
                   <option key={f} value={f}>{f}</option>
                 ))}
               </select>
@@ -211,7 +217,7 @@ function Rooms() {
               <div className="stat-label">Total Rooms</div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">{locations.length}</div>
+              <div className="stat-value">{LOCATION_NAMES.length}</div>
               <div className="stat-label">Locations</div>
             </div>
             <div className="stat-card">
@@ -340,25 +346,28 @@ function Rooms() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
-                    <label>Location</label>
-                    <input
-                      type="text"
+                    <label>Location *</label>
+                    <select
                       value={form.location}
-                      onChange={e => setForm({ ...form, location: e.target.value })}
-                      placeholder="e.g., Main Building"
-                      list="location-list"
-                    />
-                    <datalist id="location-list">
-                      {locations.map(loc => (
-                        <option key={loc} value={loc} />
+                      onChange={e => setForm({ ...form, location: e.target.value, floor: '' })}
+                      required
+                    >
+                      <option value="">Select...</option>
+                      {LOCATION_NAMES.map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
                   <div className="form-group">
-                    <label>Floor</label>
-                    <select value={form.floor} onChange={e => setForm({ ...form, floor: e.target.value })}>
+                    <label>Floor *</label>
+                    <select
+                      value={form.floor}
+                      onChange={e => setForm({ ...form, floor: e.target.value })}
+                      required
+                      disabled={!form.location}
+                    >
                       <option value="">Select...</option>
-                      {FLOOR_OPTIONS.map(f => (
+                      {getFloorsForLocation(form.location).map(f => (
                         <option key={f} value={f}>{f}</option>
                       ))}
                     </select>
