@@ -1,9 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { createProject, createEmptyProject } from '../utils/storage';
+import { createProject, createEmptyProject, getRooms } from '../utils/storage';
 import { PROJECT_TEMPLATES } from '../utils/constants';
 import { useUser } from '../utils/UserContext';
+
+const SITE_OPTIONS = [
+  { id: 'dania-beach', label: 'Dania Beach' },
+  { id: 'detroit-museum', label: 'Detroit - Museum' },
+  { id: 'detroit-church', label: 'Detroit - Church' },
+  { id: 'off-site', label: 'Off-site' },
+];
 
 function NewProject() {
   const navigate = useNavigate();
@@ -11,13 +18,20 @@ function NewProject() {
   const isExisting = searchParams.get('existing') === 'true';
   const { userProfile, teamMemberNames: TEAM_MEMBERS } = useUser();
   const [selectedTemplate, setSelectedTemplate] = useState('blank');
+  const [rooms, setRooms] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     artistName: '',
     projectManager: '',
     technicalLead: '',
-    location: ''
+    site: '',
+    room: '',
+    customLocation: '',
   });
+
+  useEffect(() => {
+    getRooms().then(setRooms);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,9 +47,20 @@ function NewProject() {
     // Generate unique IDs for template items
     const withIds = (items) => items?.map(item => ({ ...item, id: uuidv4() })) || [];
 
+    // Build location from site + room/custom
+    const siteLabel = SITE_OPTIONS.find(s => s.id === formData.site)?.label || '';
+    const roomOrCustom = formData.room || formData.customLocation || '';
+    const location = roomOrCustom ? `${siteLabel} — ${roomOrCustom}` : siteLabel;
+
     const newProject = {
       ...createEmptyProject(),
-      ...formData,
+      title: formData.title,
+      artistName: formData.artistName,
+      projectManager: formData.projectManager,
+      technicalLead: formData.technicalLead,
+      site: formData.site,
+      room: formData.room,
+      location,
       id: uuidv4(),
       status: isExisting ? 'installed' : 'planning',
       createdBy: userProfile?.name || 'Unknown',
@@ -151,19 +176,55 @@ function NewProject() {
               />
             </div>
 
-            {isExisting && (
+            <div className="form-row">
               <div className="form-group">
-                <label htmlFor="location">Location / Room</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g., Gallery A, Main Building 2nd Floor"
-                />
+                <label htmlFor="site">Site *</label>
+                <select
+                  id="site"
+                  name="site"
+                  value={formData.site}
+                  onChange={(e) => setFormData(prev => ({ ...prev, site: e.target.value, room: '' }))}
+                  required
+                >
+                  <option value="">Select site...</option>
+                  {SITE_OPTIONS.map(s => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
               </div>
-            )}
+              <div className="form-group">
+                <label htmlFor="room">Room</label>
+                {formData.site && formData.site !== 'off-site' ? (
+                  <select
+                    id="room"
+                    name="room"
+                    value={formData.room}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select room (optional)...</option>
+                    {rooms
+                      .filter(r => {
+                        const siteLabel = SITE_OPTIONS.find(s => s.id === formData.site)?.label;
+                        return r.location === siteLabel;
+                      })
+                      .map(r => (
+                        <option key={r.id} value={r.name}>{r.name} ({r.floor})</option>
+                      ))
+                    }
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    id="customLocation"
+                    name="customLocation"
+                    value={formData.customLocation}
+                    onChange={handleChange}
+                    placeholder={formData.site === 'off-site' ? 'e.g., Client venue, Festival grounds' : 'Select a site first'}
+                    disabled={!formData.site}
+                  />
+                )}
+              </div>
+            </div>
 
             <div className="form-row">
               <div className="form-group">
